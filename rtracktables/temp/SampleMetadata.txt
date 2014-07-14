@@ -1,0 +1,25 @@
+#sampleTable
+Linking_id	Tissue	Factor
+Pu1	ProB	Pu1
+Myc	ProB	Myc
+Ik_prePro	PreProB	Ik
+Ik_pro	ProB	Ik
+
+#sampleMapping
+#Bams
+_Bam	Pu1
+_Bam	Myc
+_Bam	Ik_prePro
+_Bam	Ik_pro
+
+#BigWigs
+Pu1_Bigwig	Pu1
+Myc_Bigwig	Myc
+Ik_prePro_Bigwig	Ik_prePro
+Ik_pro_Bigwig	Ik_pro
+
+#Intervals
+Pu1_Interval	Pu1
+Myc_Interval	Myc
+Ik_prePro_Interval	Ik_prePro
+Ik_pro_Interval	Ik_pro

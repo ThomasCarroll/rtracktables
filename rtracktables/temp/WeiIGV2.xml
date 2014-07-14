@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="mm9" groupTracksBy="Tissue" hasGeneTrack="false" hasSequenceTrack="true" locus="chr16:16859509-16877665" version="8">
+    <Resources>
+        <Resource name="Ik_pro_Bigwig" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"/>
+        <Resource name="Ik_prePro_Bigwig" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw"/>
+        <Resource name="Ik_pro_Interval" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="Pu1_Bigwig" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw"/>
+        <Resource name="Ik_prePro_Interval" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="Myc_Bigwig" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks-2/MycDupMarkedNormalised.bw"/>
+        <Resource name="Myc_Interval" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed"/>
+        <Resource name="Pu1_Interval" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/../../../../Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="SampleMetadata" path="/Users/tcarroll/Desktop/rtracktables/rtracktables/temp/SampleMetadata.txt"/>
+    </Resources>
+    <Panel height="370" name="DataPanel" width="1263">
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed" name="Pu1_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../Downloads/randomTracks-2//Pu1DupMarkedNormalised.bw" name="Pu1_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed" name="Myc_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../Downloads/randomTracks-2//MycDupMarkedNormalised.bw" name="Myc_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed" name="Ik_pro_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../Downloads/randomTracks-2//Ikaros_1_proBDupMarkedNormalised.bw" name="Ik_pro_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed" name="Ik_prePro_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../Downloads/randomTracks-2//Ikaros_2_preproBDupMarkedNormalised.bw" name="Ik_prePro_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="123" name="FeaturePanel" width="1263">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.7434869739478958"/>
+    <Regions>
+        <Region chromosome="chr16" description="" end="16877665" start="16859509"/>
+        <Region chromosome="chr16" description="" end="16877665" start="16859509"/>
+        <Region chromosome="chr16" description="" end="16877665" start="16859509"/>
+    </Regions>
+    <HiddenAttributes>
+        <Attribute name="NAME"/>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+    </HiddenAttributes>
+</Session>

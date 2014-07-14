@@ -14,47 +14,40 @@ MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table("\n#Intervals",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
   write.table(IntervalMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
 }
-MakeIGVSessionXML <- function(files,fileType,names,igvdirectory,XMLname,genomeName,locusName="All"){
+MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusName="All"){
   i <- 1
   require(XML)
-  files <- gsub(".xls",".bed",files)
   Output <- file.path(igvdirectory,paste(XMLname,".xml",sep=""))
-  resources <- vector("list",length=length(files))
-  if(fileType == "Bam"){
-    NewName <- paste(names[i],"_Bam",sep="")
-  }
-  if(fileType == "Bigwig"){
-    NewName <- paste(names[i],"_Bigwig",sep="")
-  }
-  if(fileType == "Macs"){
-    NewName <- paste(names[i],"_Macs",sep="")
-  }
-  if(fileType == "MacsDiff"){
-    NewName <- paste(names[i],"_MacsDiff",sep="")
-  }
-  if(fileType == "TPICs"){
-    NewName <- paste(names[i],"_TPICs",sep="")
-  }
-  if(fileType == "Sicer"){
-    NewName <- paste(names[i],"_Sicer",sep="")
-  }
   GlobalNode <- newXMLNode("Global",attrs=c(genome.value=genomeName,groupTracksBy="Linking_id",locus=locusName,version=3))
   ResourcesNode <- newXMLNode("Resources",parent=GlobalNode)
-  for(i in 1:length(resources)){
-    resources[[i]] <-  newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(files[i],Output),relativePath=T))
-  }
   MetaDataNode <- newXMLNode("Resource",parent=ResourcesNode,attrs=c(name="SampleMetadata",path=relativePath(file.path(igvdirectory,"SampleMetadata.txt"),Output),relativePath=T))
   PanelDataNode <-  newXMLNode("Panel",attrs=c(height="350",name="DataPanel",width="1115"),parent=GlobalNode)
-  if(fileType == "Bam"){
-    TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",colorOption="UNEXPECTED_PAIR",displayMode="EXPANDED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(files[i],Output),name=NewName[i],showDataRange="true",sortByTag="",visible="true"),parent=PanelDataNode)
-  }
-  if(fileType == "Bigwig"){
-    TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",autoscale="true",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(files[i],Output),name=NewName[i],renderer="BAR_CHART",showDataRange="true",visible="true",windowFunction="mean"),parent=PanelDataNode)
-    DisplayRangeNode <-  newXMLNode("DataRange",attrs=c(baseline="0.0",drawBaseline="true",flipAxis="false",maximum="50",minimum="5",type="LINEAR"),parent=TrackNode)
-  }
-  if(fileType == "Macs" | fileType == "TPICs"| fileType == "Sicer" | fileType == "MacsDiff"){
-    TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",height="45",id=relativePath(files[i],Output),name=NewName[i],renderer="BASIC_FEATURE",showDataRange="true",sortable="false",visible="true",windowFunction="count"),parent=PanelDataNode)
-  }
+  #bamFiles <- SampleSheet[!is.na(SampleSheet[,"bam"]),"bam"]
+  #bigwigFiles <- SampleSheet[!is.na(SampleSheet[,"bigwig"]),"bigwig"]
+  #intervals <- SampleSheet[!is.na(SampleSheet[,"interval"]),"interval"]
+  
+  resources <- vector("list")
+  for(i in 1:nrow(SampleSheet)){
+    bamFiles <- SampleSheet[!is.na(SampleSheet[i,"bam"]),"bam"]
+    bigwigFiles <- SampleSheet[!is.na(SampleSheet[i,"bigwig"]),"bigwig"]
+    intervalFiles <- SampleSheet[!is.na(SampleSheet[i,"interval"]),"interval"]    
+    if(length(bamFiles[i])){
+      NewName <- paste(SampleSheet[i,"SampleName"],"_Bam",sep="")
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bamFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",colorOption="UNEXPECTED_PAIR",displayMode="EXPANDED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bamFiles[i],Output),name=NewName[i],showDataRange="true",sortByTag="",visible="true"),parent=PanelDataNode)
+    }
+    if(length(intervals[i])){
+      NewName <- paste(SampleSheet[i,"SampleName"],"_Interval",sep="")
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bamFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",height="45",id=relativePath(files[i],Output),name=NewName[i],renderer="BASIC_FEATURE",showDataRange="true",sortable="false",visible="true",windowFunction="count"),parent=PanelDataNode)
+    }
+    if(length(bigwigFiles[i])){
+      NewName <- paste(SampleSheet[i,"SampleName"],"_Bigwig",sep="")
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bigwigFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",autoscale="true",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bigwigFiles[i],Output),name=NewName[i],renderer="BAR_CHART",showDataRange="true",visible="true",windowFunction="mean"),parent=PanelDataNode)
+      DisplayRangeNode <-  newXMLNode("DataRange",attrs=c(baseline="0.0",drawBaseline="true",flipAxis="false",maximum="50",minimum="5",type="LINEAR"),parent=TrackNode)
+    }
+  }  
   saveXML(GlobalNode,file=Output)
   
   return(Output)
