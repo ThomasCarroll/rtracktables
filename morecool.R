@@ -69,17 +69,22 @@ colnames(SampleSheet) <- c("SampleName",'Tissue',"Factor")
 fileSheet <- cbind(
   c("Pu1","Myc","Ik_prePro","Ik_pro"),
   c(NA,NA,NA,NA),
-  c("Downloads/randomTracks-2//Pu1DupMarkedNormalised.bw",
-    "Downloads/randomTracks-2//MycDupMarkedNormalised.bw",
-    "Downloads/randomTracks-2//Ikaros_2_preproBDupMarkedNormalised.bw",
-    "Downloads/randomTracks-2//Ikaros_1_proBDupMarkedNormalised.bw"),
-  c("Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed",
-    "Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed",
-    "Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed",
-    "Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed")
+  c("/Users/tcarroll/Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/MycDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"),
+  c("/Users/tcarroll/Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed")
 )
 colnames(fileSheet) <- c("SampleName","bam","bigwig","interval") 
 MakeIGVSampleMetadata(SampleSheet,fileSheet,getwd())
+MakeIGVSampleMetadata(SampleSheet,fileSheet,file.path("/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources","IGV"))
+MakeIGVSessionXML(fileSheet,file.path("/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources","IGV"),"WeiIGV","mm9",locusName="All")
+MakeIGVSampleMetadata(SampleSheet,fileSheet,"/Users/tcarroll/Documents")
+MakeIGVSessionXML(fileSheet,"/Users/tcarroll/Documents","WeiIGV","mm9",locusName="All")
+
 exportNormalisedBW <- function(bamFile,qc,normaliseTo="blacklisted"){
   require(GenomicAlignments)
   require(rtracklayer)

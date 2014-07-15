@@ -25,26 +25,28 @@ MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusN
   #bamFiles <- SampleSheet[!is.na(SampleSheet[,"bam"]),"bam"]
   #bigwigFiles <- SampleSheet[!is.na(SampleSheet[,"bigwig"]),"bigwig"]
   #intervals <- SampleSheet[!is.na(SampleSheet[,"interval"]),"interval"]
-  
+  bamFiles <- SampleSheet[,"bam"]
+  bigwigFiles <- SampleSheet[,"bigwig"]
+  intervalFiles <- SampleSheet[,"interval"]    
   resources <- vector("list")
+  #print(Output)
   for(i in 1:nrow(SampleSheet)){
-    bamFiles <- SampleSheet[!is.na(SampleSheet[i,"bam"]),"bam"]
-    bigwigFiles <- SampleSheet[!is.na(SampleSheet[i,"bigwig"]),"bigwig"]
-    intervalFiles <- SampleSheet[!is.na(SampleSheet[i,"interval"]),"interval"]    
-    if(length(bamFiles[i])){
+    print(i)
+    if(!is.na(SampleSheet[i,"bam"])){
       NewName <- paste(SampleSheet[i,"SampleName"],"_Bam",sep="")
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bamFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",colorOption="UNEXPECTED_PAIR",displayMode="EXPANDED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bamFiles[i],Output),name=NewName[i],showDataRange="true",sortByTag="",visible="true"),parent=PanelDataNode)
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(bamFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",colorOption="UNEXPECTED_PAIR",displayMode="EXPANDED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bamFiles[i],Output),name=NewName,showDataRange="true",sortByTag="",visible="true"),parent=PanelDataNode)
     }
-    if(length(intervals[i])){
+    if(!is.na(SampleSheet[i,"interval"])){
       NewName <- paste(SampleSheet[i,"SampleName"],"_Interval",sep="")
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bamFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",height="45",id=relativePath(files[i],Output),name=NewName[i],renderer="BASIC_FEATURE",showDataRange="true",sortable="false",visible="true",windowFunction="count"),parent=PanelDataNode)
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(intervalFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",height="45",id=relativePath(intervalFiles[i],Output),name=NewName,renderer="BASIC_FEATURE",showDataRange="true",sortable="false",visible="true",windowFunction="count"),parent=PanelDataNode)
     }
-    if(length(bigwigFiles[i])){
+    if(!is.na(SampleSheet[i,"bigwig"])){
       NewName <- paste(SampleSheet[i,"SampleName"],"_Bigwig",sep="")
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName[i],name=NewName[i],path=relativePath(bigwigFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",autoscale="true",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bigwigFiles[i],Output),name=NewName[i],renderer="BAR_CHART",showDataRange="true",visible="true",windowFunction="mean"),parent=PanelDataNode)
+      print(relativePath(bigwigFiles[i],Output))
+      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(bigwigFiles[i],Output),relativePath=T))))
+      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",autoscale="true",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bigwigFiles[i],Output),name=NewName,renderer="BAR_CHART",showDataRange="true",visible="true",windowFunction="mean"),parent=PanelDataNode)
       DisplayRangeNode <-  newXMLNode("DataRange",attrs=c(baseline="0.0",drawBaseline="true",flipAxis="false",maximum="50",minimum="5",type="LINEAR"),parent=TrackNode)
     }
   }  
