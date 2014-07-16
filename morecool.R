@@ -85,6 +85,9 @@ MakeIGVSessionXML(fileSheet,file.path("/Users/tcarroll/Downloads/DataTables-1.10
 MakeIGVSampleMetadata(SampleSheet,fileSheet,"/Users/tcarroll/Documents")
 MakeIGVSessionXML(fileSheet,"/Users/tcarroll/Documents","WeiIGV","mm9",locusName="All")
 
+titles <- colnames(SampleSheet)
+names(titles) <- rep("title",length=length(titles))
+
 exportNormalisedBW <- function(bamFile,qc,normaliseTo="blacklisted"){
   require(GenomicAlignments)
   require(rtracklayer)
