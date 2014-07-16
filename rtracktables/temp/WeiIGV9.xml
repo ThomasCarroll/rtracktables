@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="mm9" groupTracksBy="Linking_id" hasGeneTrack="false" hasSequenceTrack="true" locus="chr5:25638935-35721662" version="8">
+    <Resources>
+        <Resource name="Myc_Interval" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks/Myc_WithInput_Input_Ch12_peaks.bed"/>
+        <Resource name="Ik_prePro_Bigwig" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw"/>
+        <Resource name="Pu1_Interval" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="Ik_pro_Bigwig" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"/>
+        <Resource name="Pu1_Bigwig" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks-2/Pu1DupMarkedNormalised.bw"/>
+        <Resource name="Ik_pro_Interval" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="Myc_Bigwig" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks-2/MycDupMarkedNormalised.bw"/>
+        <Resource name="Ik_prePro_Interval" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/../../../../randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed"/>
+        <Resource name="SampleMetadata" path="/Users/tcarroll/Downloads/DataTables-1.10.1/examples/data_sources/IGV/SampleMetadata.txt"/>
+    </Resources>
+    <Panel height="434" name="DataPanel" width="1263">
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed" name="Pu1_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../randomTracks-2/Pu1DupMarkedNormalised.bw" name="Pu1_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../randomTracks/Myc_WithInput_Input_Ch12_peaks.bed" name="Myc_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../randomTracks-2/MycDupMarkedNormalised.bw" name="Myc_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed" name="Ik_prePro_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw" name="Ik_prePro_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="../../../../randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed" name="Ik_pro_Interval" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../../../randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw" name="Ik_pro_Bigwig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="61" name="FeaturePanel" width="1263">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8685258964143426"/>
+    <HiddenAttributes>
+        <Attribute name="NAME"/>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+    </HiddenAttributes>
+</Session>

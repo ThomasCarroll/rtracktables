@@ -1,0 +1,16 @@
+{
+    "contents" : "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<Session genome=\"mm9\" groupTracksBy=\"Linking_id\" hasGeneTrack=\"false\" hasSequenceTrack=\"true\" locus=\"chr5:25638935-35721662\" version=\"8\">\n</Session>\n",
+    "created" : 1405457064478.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2647487514",
+    "id" : "B442AB42",
+    "lastKnownWriteTime" : 1405457092,
+    "path" : "~/Desktop/rtracktables/rtracktables/temp/WeiIGV10.xml",
+    "project_path" : "temp/WeiIGV10.xml",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "xml"
+}

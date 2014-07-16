@@ -1,0 +1,17 @@
+{
+    "contents" : "var temp = \"<a href=\\\"http://localhost:60151/load?file=\".concat(dir,\"/IGV/WeiIGV.xml\\\">Visit W3Schools/a>\"));\nvar temp2 = \"<a href=\\\"http://localhost:60151/load?file=/Users/tcarroll/Documents/WeiIGV.xml\\\">Visit W3Schools\".concat(\"</a>\"));\n\"<a href=\\\"http://localhost:60151/load?file=/Users/tcarroll/Documents/WeiIGV.xml\\\">Visit W3Schools\".concat(\"IGV.xml\".concat(\"</a>\"))",
+    "created" : 1405455658414.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "4050393935",
+    "id" : "D0ADD90E",
+    "lastKnownWriteTime" : 1405455593,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
