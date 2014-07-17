@@ -2,6 +2,8 @@ MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table("#sampleTable",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,sep="\t")
   colnames(sampleMetadata)[1] <- "Linking_id"
   print(colnames(sampleMetadata))
+  sampleMetadata <- as.matrix(sampleMetadata)
+  SampleSheet <- as.matrix(SampleSheet)
   write.table(sampleMetadata,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=T,quote=F,append=T,sep="\t")
   BamMappings <- cbind(paste(SampleSheet[!is.na(SampleSheet[,"bam"]),"SampleName"],"Bam",sep="_"),SampleSheet[,"SampleName"])
   BigWigMappings <- cbind(paste(SampleSheet[!is.na(SampleSheet[,"bigwig"]),"SampleName"],"Bigwig",sep="_"),SampleSheet[,"SampleName"])
@@ -14,9 +16,28 @@ MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table("\n#Intervals",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
   write.table(IntervalMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
 }
+makeTrackHub <- function(QCobject,peaksDir,bigwigDir,IGVdirectory,genome){
+  dir.create(IGVdirectory,showWarnings=F)  
+  ss <- QCmetadata(QCobject)
+  SampleSheet <- ss[,c("ID","Tissue","Factor")]
+  colnames(SampleSheet)[1] <- "SampleName"
+  fileSheet <- cbind(ss[,c("ID"),drop=F],rep(NA,nrow(ss)))
+  peaks <- gsub("/+","/",dir(peaksDir,pattern="*peaks.bed",full.names=T))
+  names(peaks) <- gsub("_WithInput.*","",basename(peaks))
+  bigwigs <- gsub("/+","/",dir(bigwigDir,pattern="*.Dup.*\\.bw",full.names=T))
+  names(bigwigs) <- gsub("DupMarkedNormalised.bw","",basename(bigwigs))
+  fileSheet <- merge(fileSheet,cbind(names(peaks),peaks),all=T,by=1,all.x=T,all.y=F)
+  fileSheet <- merge(fileSheet,cbind(names(bigwigs),bigwigs),all=T,by=1,all.x=T,all.y=F)
+  colnames(SampleSheet) <- c("SampleName",'Tissue',"Factor")
+  colnames(fileSheet) <- c("SampleName","bam","bigwig","interval") 
+  MakeIGVSampleMetadata(SampleSheet,fileSheet,IGVdirectory)
+  return(MakeIGVSessionXML(fileSheet,IGVdirectory,"IGVfull",genome,locusName="All"))
+}
+
 MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusName="All"){
   i <- 1
   require(XML)
+  SampleSheet <- as.matrix(SampleSheet)
   Output <- file.path(igvdirectory,paste(XMLname,".xml",sep=""))
   GlobalNode <- newXMLNode("Global",attrs=c(genome.value=genomeName,groupTracksBy="Linking_id",locus=locusName,version=3))
   ResourcesNode <- newXMLNode("Resources",parent=GlobalNode)
