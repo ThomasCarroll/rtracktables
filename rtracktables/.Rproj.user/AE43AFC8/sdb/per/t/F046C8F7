@@ -1,0 +1,17 @@
+{
+    "contents" : "reducedPeaks <- reduce(unlist(peaks(resExperiment)))\noverlaps <- lapply(peaks(resExperiment),function(x)(reducedPeaks%over%x)+0)\nelementMetadata(reducedPeaks) <- do.call(cbind,overlaps)\nvladpeaks <- reducedPeaks[(reducedPeaks$Sample_ChipHS230614Rep1+reducedPeaks$Sample_ChipHS230614Rep2) > 1 & reducedPeaks$Sample_ChIPCtrl230614 == 0,]\n",
+    "created" : 1405537081176.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1762009535",
+    "id" : "F046C8F7",
+    "lastKnownWriteTime" : 1405632997,
+    "path" : "~/Downloads/vladanalysis.r",
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
