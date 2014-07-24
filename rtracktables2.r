@@ -448,6 +448,25 @@ res3 <- readGAlignmentsFromBam("/Users/tcarroll/Downloads//mergedETOH.bamRange5.
 
 nuc0hrange5 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
 nuc0hrange4 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange4.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
+nuc0hrange3 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange3.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
+nuc0hrange2 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange2.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=50)
 
+dir2 <- dir("/Users/tcarroll/Downloads//",pattern="mergedETOH.bamRange\\d.bam$",full.names=T)
+mclapply(dir2,indexBam)
+regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam",
+           mm9PC,
+           style="region",
+           format="bam",paired=T,
+           forceFragment=80)
+par(mfrow=c(2,2))
+plot(nuc0hrange5[[4]][1:3000,1],runmean(nuc0hrange5[[4]][1:3000,2],1),col="darkred",type="l")
+plot(nuc0hrange4[[4]][1:3000,1],runmean(nuc0hrange4[[4]][1:3000,2],1),col="darkred",type="l")
+plot(nuc0hrange3[[4]][1:3000,1],runmean(nuc0hrange3[[4]][1:3000,2],1),col="darkred",type="l")
+plot(nuc0hrange2[[4]][1:3000,1],runmean(nuc0hrange2[[4]][1:3000,2],1),col="darkred",type="l")
 
-plot(nuc0h80[[4]][1:3000,1],runmean(nuc0h80[[4]][1:3000,2],1),col="darkred",type="l")
+par(mfrow=c(2,2))
+plot(nuc0hrange5[[4]][,1],runmean(nuc0hrange5[[4]][,2],1),col="darkred",type="l")
+plot(nuc0hrange4[[4]][,1],runmean(nuc0hrange4[[4]][,2],1),col="darkred",type="l")
+plot(nuc0hrange3[[4]][,1],runmean(nuc0hrange3[[4]][,2],1),col="darkred",type="l")
+plot(nuc0hrange2[[4]][,1],runmean(nuc0hrange2[[4]][,2],1),col="darkred",type="l")
+

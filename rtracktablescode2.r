@@ -313,14 +313,14 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       #bamFile <- BamFile(bamFile,yieldSize=50000000L)
       #tempPaired <- readGAlignmentPairsFromBam(bamFile,param=Param)
       #tempPaired <- tempPaired[isProperPair(tempPaired)]
-      gaPaired <- readGAlignmentsFromBam("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam", 
+      gaPaired <- readGAlignmentsFromBam(bamFile, 
                                      param=ScanBamParam(what=c("mpos"),
                                      flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
       tempPos <- GRanges(seqnames(gaPaired[strand(gaPaired) == "+"]),
                       IRanges(
                         start=start(gaPaired[strand(gaPaired) == "+"]),
                         end=elementMetadata(gaPaired[strand(gaPaired) == "+"])$mpos
-                        +qwidth(res3[strand(gaPaired) == "+"])))
+                        +qwidth(gaPaired[strand(gaPaired) == "+"])))
       tempNeg <- GRanges(seqnames(gaPaired[strand(gaPaired) == "-"]),
                       IRanges(
                         start=elementMetadata(gaPaired[strand(gaPaired) == "-"])$mpos,                        
