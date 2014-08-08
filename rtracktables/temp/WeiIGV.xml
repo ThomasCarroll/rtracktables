@@ -1,4 +1,4 @@
-<Global genome.value="mm9" groupTracksBy="Linking_id" locus="All" version="3">
+<Global genome=“hg18” groupTracksBy="Linking_id" locus="All" version="3">
   <Resources>
     <Resource name="SampleMetadata" path="SampleMetadata.txt" relativePath="TRUE"/>
     <Resource label="Pu1_Interval" name="Pu1_Interval" path="../../../../Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed" relativePath="TRUE"/>
