@@ -1,182 +1,33 @@
-MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
-  write.table("#sampleTable",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,sep="\t")
-  colnames(sampleMetadata)[1] <- "Linking_id"
-  print(colnames(sampleMetadata))
-  sampleMetadata <- as.matrix(sampleMetadata)
-  SampleSheet <- as.matrix(SampleSheet)
-  write.table(sampleMetadata,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=T,quote=F,append=T,sep="\t")
-  BamMappings <- cbind(paste(SampleSheet[!is.na(SampleSheet[,"bam"]),"SampleName"],"Bam",sep="_"),SampleSheet[,"SampleName"])
-  BigWigMappings <- cbind(paste(SampleSheet[!is.na(SampleSheet[,"bigwig"]),"SampleName"],"Bigwig",sep="_"),SampleSheet[,"SampleName"])
-  IntervalMappings <- cbind(paste(SampleSheet[!is.na(SampleSheet[,"interval"]),"SampleName"],"Interval",sep="_"),SampleSheet[,"SampleName"])
-  write.table("\n#sampleMapping",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table("#Bams",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table(BamMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table("\n#BigWigs",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table(BigWigMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table("\n#Intervals",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-  write.table(IntervalMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
-}
-makeTrackHub <- function(QCobject,peaksDir,bigwigDir,IGVdirectory,genome){
-  dir.create(IGVdirectory,showWarnings=F)  
-  ss <- QCmetadata(QCobject)
-  SampleSheet <- ss[,c("ID","Tissue","Factor")]
-  colnames(SampleSheet)[1] <- "SampleName"
-  fileSheet <- cbind(ss[,c("ID"),drop=F],rep(NA,nrow(ss)))
-  peaks <- gsub("/+","/",dir(peaksDir,pattern="*peaks.bed",full.names=T))
-  names(peaks) <- gsub("_WithInput.*","",basename(peaks))
-  bigwigs <- gsub("/+","/",dir(bigwigDir,pattern="*.Dup.*\\.bw",full.names=T))
-  names(bigwigs) <- gsub("DupMarkedNormalised.bw","",basename(bigwigs))
-  fileSheet <- merge(fileSheet,cbind(names(peaks),peaks),all=T,by=1,all.x=T,all.y=F)
-  fileSheet <- merge(fileSheet,cbind(names(bigwigs),bigwigs),all=T,by=1,all.x=T,all.y=F)
-  colnames(SampleSheet) <- c("SampleName",'Tissue',"Factor")
-  colnames(fileSheet) <- c("SampleName","bam","bigwig","interval") 
-  MakeIGVSampleMetadata(SampleSheet,fileSheet,IGVdirectory)
-  return(MakeIGVSessionXML(fileSheet,IGVdirectory,"IGVfull",genome,locusName="All"))
-}
-
-MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusName="All"){
-  i <- 1
-  require(XML)
-  SampleSheet <- as.matrix(SampleSheet)
-  Output <- file.path(igvdirectory,paste(XMLname,".xml",sep=""))
-  GlobalNode <- newXMLNode("Global",attrs=c(genome.value=genomeName,groupTracksBy="Linking_id",locus=locusName,version=3))
-  ResourcesNode <- newXMLNode("Resources",parent=GlobalNode)
-  MetaDataNode <- newXMLNode("Resource",parent=ResourcesNode,attrs=c(name="SampleMetadata",path=relativePath(file.path(igvdirectory,"SampleMetadata.txt"),Output),relativePath=T))
-  PanelDataNode <-  newXMLNode("Panel",attrs=c(height="350",name="DataPanel",width="1115"),parent=GlobalNode)
-  #bamFiles <- SampleSheet[!is.na(SampleSheet[,"bam"]),"bam"]
-  #bigwigFiles <- SampleSheet[!is.na(SampleSheet[,"bigwig"]),"bigwig"]
-  #intervals <- SampleSheet[!is.na(SampleSheet[,"interval"]),"interval"]
-  bamFiles <- SampleSheet[,"bam"]
-  bigwigFiles <- SampleSheet[,"bigwig"]
-  intervalFiles <- SampleSheet[,"interval"]    
-  resources <- vector("list")
-  #print(Output)
-  for(i in 1:nrow(SampleSheet)){
-    print(i)
-    if(!is.na(SampleSheet[i,"bam"])){
-      NewName <- paste(SampleSheet[i,"SampleName"],"_Bam",sep="")
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(bamFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",colorOption="UNEXPECTED_PAIR",displayMode="EXPANDED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bamFiles[i],Output),name=NewName,showDataRange="true",sortByTag="",visible="true"),parent=PanelDataNode)
-    }
-    if(!is.na(SampleSheet[i,"interval"])){
-      NewName <- paste(SampleSheet[i,"SampleName"],"_Interval",sep="")
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(intervalFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",height="45",id=relativePath(intervalFiles[i],Output),name=NewName,renderer="BASIC_FEATURE",showDataRange="true",sortable="false",visible="true",windowFunction="count"),parent=PanelDataNode)
-    }
-    if(!is.na(SampleSheet[i,"bigwig"])){
-      NewName <- paste(SampleSheet[i,"SampleName"],"_Bigwig",sep="")
-      print(relativePath(bigwigFiles[i],Output))
-      resources <-  c(resources,list(newXMLNode("Resource",parent=ResourcesNode,attrs=c(label=NewName,name=NewName,path=relativePath(bigwigFiles[i],Output),relativePath=T))))
-      TrackNode <-  newXMLNode("Track",attrs=c(altColor="0,0,178",autoscale="true",color="0,0,178",displayMode="COLLAPSED",featureVisibilityWindow="-1",fontSize="10",id=relativePath(bigwigFiles[i],Output),name=NewName,renderer="BAR_CHART",showDataRange="true",visible="true",windowFunction="mean"),parent=PanelDataNode)
-      DisplayRangeNode <-  newXMLNode("DataRange",attrs=c(baseline="0.0",drawBaseline="true",flipAxis="false",maximum="50",minimum="5",type="LINEAR"),parent=TrackNode)
-    }
-  }  
-  saveXML(GlobalNode,file=Output)
-  
-  return(Output)
-}
-
-exportNormalisedBW <- function(bamFile,qc,normaliseTo="blacklisted"){
-  require(GenomicAlignments)
-  require(rtracklayer)
-  #library(QuasR)
-  extendBy <- fragmentlength(qc)
-  #extendBy <- qc
-  message("Reading tags from ",bamFile,appendLF=FALSE)
-  #totalReads <- alignmentStats(bamFile)[,"mapped"]
-  if(normaliseTo == "blacklisted"){
-    totalReads <- qc@FlagAndTagCounts["MapQPass"] - qc@CountsInFeatures$BlackList
-  }
-  if(normaliseTo == "Total"){
-    totalReads <- qc@FlagAndTagCounts["Mapped"]
-  }  
-  if(normaliseTo == "UniqueTotal"){
-    totalReads <- qc@FlagAndTagCounts["Mapped"]-qc@FlagAndTagCounts["Duplicates"]
-  }  
-  total <- readGAlignmentsFromBam(bamFile)
-  message("..done")
-  message("Read in ",length(total)," reads")
-  message("Extending reads to fragmentlength of ",extendBy," ..",appendLF=FALSE)
-  temp <- resize(as(total,"GRanges"),extendBy,"start")
-  message("..done")
-  rm(total)
-  gc()
-  message("Calculating coverage..",appendLF=FALSE)
-  genomeCov <- coverage(temp)
-  rm(temp)
-  message("..done")
-  
-  message("Normalised coverage..",appendLF=FALSE)
-  genomeCov <- (genomeCov/totalReads)*1000000
-  message("..done")
-  message("Exporting coverage..",appendLF=FALSE)
-  export.bw(genomeCov,file.path(dirname(dirname(bamFile)),gsub("\\.bam","Normalised\\.bw",basename(bamFile))))
-  message("..done")
-}
-
-GetAroundTSS <- function(FullGeneBounds,distance,distanceIn){
-  require(GenomicRanges)
-  PosGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "+"])
-  NegGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "-"])
-  TempFramePos <- cbind(as.data.frame(elementMetadata(PosGenes)),width(PosGenes))
-  TempFrameNeg <- cbind(as.data.frame(elementMetadata(NegGenes)),width(NegGenes))
-  colnames(TempFramePos)[3] <- "WidthOfOriginalGene"
-  colnames(TempFrameNeg)[3] <- "WidthOfOriginalGene"  
-  NewPosGenes <- GRanges(seqnames=seqnames(PosGenes),IRanges(start=(as.vector(start(ranges(PosGenes))))-distance,end=(as.vector(start(ranges(PosGenes))))+distanceIn),strand=strand(PosGenes),TempFramePos)
-  NewNegGenes <- GRanges(seqnames=seqnames(NegGenes),IRanges(start=(as.vector(end(ranges(NegGenes)))-distanceIn),end=(as.vector(end(ranges(NegGenes))))+distance),strand=strand(NegGenes),TempFrameNeg)
-  names(NewPosGenes) <- names(PosGenes)
-  names(NewNegGenes) <- names(NegGenes)
-  AllPromoters <- c(NewPosGenes,NewNegGenes)
-  return(AllPromoters)
-}
-
-GetTargetTSS <- function(RegionRanges,distance,distanceIn=0,min){
-  RegionRanges <- RegionRanges[width(RegionRanges) > min]
-  TSSs <- GetAroundTSS(RegionRanges,distance,distanceIn=distanceIn)
-  #print(TSSs)
-  #  Centre <- GRanges(seqnames=seqnames(RegionRanges),IRanges(start=round((((as.vector(start(ranges(RegionRanges))))+(as.vector(end(ranges(RegionRanges)))))/2)-distance),end=round((((as.vector(start(ranges(RegionRanges))))+(as.vector(end(ranges(RegionRanges)))))/2)+distance)),strand="*")
-  #RegionRangesList <- GRangesList(TSSs[strand(TSSs) == "+"],TSSs[strand(TSSs) == "-"])
-  return(TSSs)
-}
-
-GetAroundTTS <- function(FullGeneBounds,distance,distanceIn){
-  require(GenomicRanges)
-  PosGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "+"])
-  NegGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "-"])
-  TempFramePos <- cbind(as.data.frame(elementMetadata(PosGenes)),width(PosGenes))
-  TempFrameNeg <- cbind(as.data.frame(elementMetadata(NegGenes)),width(NegGenes))
-  colnames(TempFramePos)[3] <- "WidthOfOriginalGene"
-  colnames(TempFrameNeg)[3] <- "WidthOfOriginalGene"  
-  NewPosGenes <- GRanges(seqnames=seqnames(PosGenes),IRanges(start=(as.vector(end(ranges(PosGenes))))-distanceIn,end=(as.vector(end(ranges(PosGenes))))+distance),strand=strand(PosGenes),TempFramePos)
-  NewNegGenes <- GRanges(seqnames=seqnames(NegGenes),IRanges(start=(as.vector(start(ranges(NegGenes)))-distance),end=(as.vector(start(ranges(NegGenes))))+distanceIn),strand=strand(NegGenes),TempFrameNeg)
-  names(NewPosGenes) <- names(PosGenes)
-  names(NewNegGenes) <- names(NegGenes)
-  AllPromoters <- c(NewPosGenes,NewNegGenes)
-  return(AllPromoters)
-}
-
-GetTargetTTS <- function(RegionRanges,distance,distanceIn=0,min){
-  RegionRanges <- RegionRanges[width(RegionRanges) > min]
-  TTSs <- GetAroundTTS(RegionRanges,distance,distanceIn=distanceIn)
-  #print(TSSs)
-  #  Centre <- GRanges(seqnames=seqnames(RegionRanges),IRanges(start=round((((as.vector(start(ranges(RegionRanges))))+(as.vector(end(ranges(RegionRanges)))))/2)-distance),end=round((((as.vector(start(ranges(RegionRanges))))+(as.vector(end(ranges(RegionRanges)))))/2)+distance)),strand="*")
-  #RegionRangesList <- GRangesList(TSSs[strand(TSSs) == "+"],TSSs[strand(TSSs) == "-"])
-  return(TTSs)
-}
-
-
-GetGene <- function(FullGeneBounds,distanceFromStart,distanceFromEnd,min){
-  require(GenomicRanges)
-  FullGeneBounds <- FullGeneBounds[width(FullGeneBounds) > min]
-  PosGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "+"])
-  NegGenes <-  (FullGeneBounds[strand(FullGeneBounds) == "-"])
-  NewPosGenes <- GRanges(seqnames=seqnames(PosGenes),IRanges(start=(as.vector(start(ranges(PosGenes))))-distanceFromStart,end=(as.vector(end(ranges(PosGenes))))+distanceFromEnd),strand=strand(PosGenes),elementMetadata(PosGenes))
-  NewNegGenes <- GRanges(seqnames=seqnames(NegGenes),IRanges(start=(as.vector(start(ranges(NegGenes)))-distanceFromEnd),end=(as.vector(end(ranges(NegGenes))))+distanceFromStart),strand=strand(NegGenes),elementMetadata(NegGenes))
-  names(NewPosGenes) <- names(PosGenes)
-  names(NewNegGenes) <- names(NegGenes)
-  AllPromoters <- c(NewPosGenes,NewNegGenes)
-  return(AllPromoters)
-}
+#' Plot coverage of points or regions.
+#'
+#' @param bamFile Character vector for location of BAM file.
+#' @param testRanges GRanges object of regions to plot.
+#' @param FragmentLength Integer vector Predicted or expected fragment length.
+#' @param style Point or region (see details)
+#' @param distanceAround Distance around centre of region to be used for plotting
+#' @param distanceInRegionStart Distance into region start 
+#' (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions) 
+#' for plotting.
+#' @param distanceOutRegionStart Distance out from region start 
+#' (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions) 
+#' for plotting.
+#' @param distanceInRegionEnd Distance into region end 
+#' (3' for Watson/positive strand or notspecified strand Regions,5' for Crick/negatie strand regions) 
+#' for plotting.
+#' @param distanceOutRegionEnd Distance out from region end 
+#' (3' for Watson/positive strand or notspecified strand Regions,5' for Crick/negatie strand regions) 
+#' for plotting.
+#' @param paired Is data paired end 
+#' @param normalize Calculate coverage as RPM. Presently only RPM available.
+#' @param plotBy Score to be used for plotting. Presently only coverage.
+#' @param removeDup Remove duplicates before calculating coverage.
+#' @param format BAM or BigWig
+#' @param seqlengths Chromosomes to be used. If missing will report all.
+#' @param forceFragment Centre fragment and force consistent fragment width.
+#' @return ChIPprofile A ChIPprofile object. 
+#' @export
+#' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools
+#' 
 regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL){
   if(!verbose){
     suppressMessages(runRegionPlot())
@@ -184,12 +35,9 @@ regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,styl
   result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment)
   return(result)  
 }
+
 runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL){
-  require(QuasR)
-  require(rtracklayer)  
-  require(GenomicAlignments)
-  require(GenomicRanges)  
-  
+
   #bamFile <- "/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/RNAPII/Sample_R1-0hDupMarked.bam"
   #bamFile <-"Downloads//mergedETOH.bwRange5.bw"
   #bamFile <-"Downloads//Sample_R1-6hDupMarkedNormalised.bw"
@@ -258,7 +106,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   testRangeNames <- unique(seqnames(testRanges))
   temptestranges <- GRanges()
   for(i in 1:length(testRangeNames)){
-    perchrRanges <- testRanges[seqnames(testRanges) %in% testRangeNames[i]]
+    perchrRanges <- testRanges[seqnames(testRanges) %in% as.vector(testRangeNames[i])]
     temptestranges <- c(temptestranges,perchrRanges[end(perchrRanges)+maxDistance < lengths[names(lengths) %in% testRangeNames[i]]
                                                     & start(perchrRanges)-maxDistance > 0 ])
     #print(i)
@@ -314,18 +162,18 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       #tempPaired <- readGAlignmentPairsFromBam(bamFile,param=Param)
       #tempPaired <- tempPaired[isProperPair(tempPaired)]
       gaPaired <- readGAlignmentsFromBam(bamFile, 
-                                     param=ScanBamParam(what=c("mpos"),
-                                     flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
+                                         param=ScanBamParam(what=c("mpos"),
+                                                            flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
       tempPos <- GRanges(seqnames(gaPaired[strand(gaPaired) == "+"]),
-                      IRanges(
-                        start=start(gaPaired[strand(gaPaired) == "+"]),
-                        end=elementMetadata(gaPaired[strand(gaPaired) == "+"])$mpos
-                        +qwidth(gaPaired[strand(gaPaired) == "+"])))
+                         IRanges(
+                           start=start(gaPaired[strand(gaPaired) == "+"]),
+                           end=elementMetadata(gaPaired[strand(gaPaired) == "+"])$mpos
+                           +qwidth(gaPaired[strand(gaPaired) == "+"])))
       tempNeg <- GRanges(seqnames(gaPaired[strand(gaPaired) == "-"]),
-                      IRanges(
-                        start=elementMetadata(gaPaired[strand(gaPaired) == "-"])$mpos,                        
-                        end=end(gaPaired[strand(gaPaired) == "-"])
-                      )) 
+                         IRanges(
+                           start=elementMetadata(gaPaired[strand(gaPaired) == "-"])$mpos,                        
+                           end=end(gaPaired[strand(gaPaired) == "-"])
+                         )) 
       temp <- c(tempPos,tempNeg)                
       #temp <- GRanges(seqnames(tempPaired),IRanges(start(left(tempPaired)),end(right(tempPaired))))
       message("..Done.\nRead in ",length(temp)," reads")
@@ -392,7 +240,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         if(i == nOfWindows){
           addToWindow <- extraLastWindow 
         }
-        grListWindowsPos <- c(grListWindowsPos,GRanges(seqnames(testRangesPos),IRanges(    	
+        grListWindowsPos <- c(grListWindowsPos,GRanges(seqnames(testRangesPos),IRanges(      
           start(testRangesPos)+(windows*(i-1)),
           start(testRangesPos)+(windows*i)-1+addToWindow),name=testRangesPos$name))
       }
@@ -466,11 +314,24 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     AllRegionStart <- rbind(posRegionStartMat,negRegionStartMat)
     AllRegionEnd <- rbind(posRegionEndMat,negRegionEndMat)
     meansMat <- matrix(meansList,ncol=nOfWindows,byrow=T)
-    rownames(meansMat) <- matrix(names(meansList),ncol=nOfWindows,byrow=T)[,1]    
+    rownames(meansMat) <- matrix(names(meansList),ncol=nOfWindows,byrow=T)[,1]
     start <- cbind(seq(1:length(colMeans(AllRegionStart))),colMeans(AllRegionStart))
     mid <- cbind(max(start[,1])+seq(1:length(colMeans(meansMat)))*100,colMeans(meansMat))
     end <- cbind(max(mid[,1])+seq(1:length(colMeans(AllRegionEnd))),colMeans(AllRegionEnd))
-    return(list(meansMat,AllRegionStart,AllRegionEnd,rbind(start,mid,end)))
-    
+    #reportRanges <- testRanges[match(rownames(meansMat),testRanges$name)]
+    #returmm9PC[match(mm9PC$name,rownames(temp))]n(list(meansMat,AllRegionStart,AllRegionEnd,rbind(start,mid,end)))
+    #reportRanges <- testRanges[match(rownames(meansMat),testRanges$name)]
+    #elementMetadata(reportRanges) <- cbind(elementMetadata(reportRanges),AllRegionStart,meansMat,AllRegionEnd)
+    #new("ChIPprofile",reportRanges,profile=list())
+    #return(profiles)
+    profileMat <- cbind(AllRegionStart,meansMat,AllRegionEnd)
+    colnames(profileMat) <- c(paste0("Region_Start",seq(0-distanceOutRegionStart,-1)),"Region_Start",paste0("Region_Start",seq(1,distanceOutRegionStart)),
+    paste0(seq(1:100),"%_ofRegion"),
+    paste0("Region_End",seq(0-distanceOutRegionEnd,-1)),"Region_End",paste0("Region_End",seq(1,distanceOutRegionEnd))
+    )
+    filteredRanges <- c(testRangesPos,testRangesNeg)
+    profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$name)])
+    return(new("ChIPprofile",profileSample,profile=list()))
   } 
 }
+

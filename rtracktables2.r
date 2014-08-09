@@ -360,8 +360,8 @@ mm9TSS <- GetTargetTSS(mm9PC,300,300,500)
 #res1 <- regionPlot("/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/nucelosome/fromMRC/mergedETOH.bwRange5.bw",mm9PC,style="region",format="bigwig")
 nuc0h <- regionPlot("Downloads//mergedETOH.bwRange5.bw",mm9PC,style="region",format="bigwig")
 nuc6h <- regionPlot("Downloads//mergedOHT.bwRange5.bw",mm9PC,style="region",format="bigwig")
-pol6h <- regionPlot("Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
-pol0h <- regionPlot("Downloads//Sample_R1-0hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
+pol0h <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
 nuc0h4 <- regionPlot("Downloads//mergedETOH.bwRange4.bw",mm9PC,style="region",format="bigwig")
 
 nuc6h4 <- regionPlot("Downloads//mergedOHT.bwRange4.bw",mm9PC,style="region",format="bigwig")
@@ -441,32 +441,15 @@ plot(nuc6h3[[4]][,1],runmean(nuc6h3[[4]][,2],1),col="darkred",type="l",lwd=2)
 plot(nuc6h2[[4]][,1],runmean(nuc6h2[[4]][,2],1),col="darkred",type="l",lwd=2)
 dev.off()
 
-lines(nuc6h[[4]][1:3000,1],runmean(nuc6h[[4]][1:3000,2],1)-2.8,col="darkblue")
+lines(nuc6h[[4]][1:3000,1],runmean(nuc6h[[4]][1:3000,2filesForPol <- BamFileList(dir("/Users/tcarroll/Downloads/",pattern="Sample.*.DupMarked.bam",full.names=T,recursive=F)
+                                                                                 ,yieldSize=20000000)
+                                              ],1)-2.8,col="darkblue")
 
 
-res3 <- readGAlignmentsFromBam("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam", param=ScanBamParam(what=c("mpos"),flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
+pol0h <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
 
-nuc0hrange5 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
-nuc0hrange4 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange4.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
-nuc0hrange3 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange3.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=80)
-nuc0hrange2 <- regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange2.bam",mm9PC,style="region",format="bam",paired=T,forceFragment=50)
+nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+nuc6h80 <- regionPlot("/Users/tcarroll//Downloads//mergedOHT.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
 
-dir2 <- dir("/Users/tcarroll/Downloads//",pattern="mergedETOH.bamRange\\d.bam$",full.names=T)
-mclapply(dir2,indexBam)
-regionPlot("/Users/tcarroll/Downloads//mergedETOH.bamRange5.bam",
-           mm9PC,
-           style="region",
-           format="bam",paired=T,
-           forceFragment=80)
-par(mfrow=c(2,2))
-plot(nuc0hrange5[[4]][1:3000,1],runmean(nuc0hrange5[[4]][1:3000,2],1),col="darkred",type="l")
-plot(nuc0hrange4[[4]][1:3000,1],runmean(nuc0hrange4[[4]][1:3000,2],1),col="darkred",type="l")
-plot(nuc0hrange3[[4]][1:3000,1],runmean(nuc0hrange3[[4]][1:3000,2],1),col="darkred",type="l")
-plot(nuc0hrange2[[4]][1:3000,1],runmean(nuc0hrange2[[4]][1:3000,2],1),col="darkred",type="l")
-
-par(mfrow=c(2,2))
-plot(nuc0hrange5[[4]][,1],runmean(nuc0hrange5[[4]][,2],1),col="darkred",type="l")
-plot(nuc0hrange4[[4]][,1],runmean(nuc0hrange4[[4]][,2],1),col="darkred",type="l")
-plot(nuc0hrange3[[4]][,1],runmean(nuc0hrange3[[4]][,2],1),col="darkred",type="l")
-plot(nuc0hrange2[[4]][,1],runmean(nuc0hrange2[[4]][,2],1),col="darkred",type="l")
 
