@@ -10,6 +10,9 @@
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile")
 }
+\arguments{
+\item{object}{A ChIPprofile object}
+}
 \description{
 A function to plot regions
 }

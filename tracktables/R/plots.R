@@ -12,6 +12,7 @@
 #' 
 #' @author Thomas Carroll
 #'
+#' @param object A ChIPprofile object 
 plotRegion.ChIPprofile <- function(object)
 {
   profileList <- lapply(c(assays(object)),colMeans)
