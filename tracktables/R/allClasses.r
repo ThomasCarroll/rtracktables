@@ -2,5 +2,5 @@
 #' @export
 #' @slot profile list
 setClass("ChIPprofile",contains = "SummarizedExperiment",
-         slots=c(profile="list"
+         slots=c(params="list"
          ))

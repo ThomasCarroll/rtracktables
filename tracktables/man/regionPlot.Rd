@@ -15,6 +15,8 @@ regionPlot(bamFile, testRanges, nOfWindows = 100, FragmentLength = 150,
 
 \item{testRanges}{GRanges object of regions to plot.}
 
+\item{nOfWindows}{Number of windows to bin regions into for coverage calculations (Default 100)}
+
 \item{FragmentLength}{Integer vector Predicted or expected fragment length.}
 
 \item{style}{Point or region (see details)}
@@ -44,6 +46,8 @@ for plotting.}
 \item{plotBy}{Score to be used for plotting. Presently only coverage.}
 
 \item{removeDup}{Remove duplicates before calculating coverage.}
+
+\item{verbose}{TRUE or FALSE}
 
 \item{format}{BAM or BigWig}
 

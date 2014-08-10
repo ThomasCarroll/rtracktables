@@ -2,6 +2,7 @@
 
 export(regionPlot)
 exportClasses(ChIPprofile)
+exportMethods(plotRegion)
 import(GenomicAlignments)
 import(GenomicRanges)
 import(IRanges)

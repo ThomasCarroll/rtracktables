@@ -2,6 +2,7 @@
 #'
 #' @param bamFile Character vector for location of BAM file.
 #' @param testRanges GRanges object of regions to plot.
+#' @param nOfWindows Number of windows to bin regions into for coverage calculations (Default 100)
 #' @param FragmentLength Integer vector Predicted or expected fragment length.
 #' @param style Point or region (see details)
 #' @param distanceAround Distance around centre of region to be used for plotting
@@ -21,13 +22,14 @@
 #' @param normalize Calculate coverage as RPM. Presently only RPM available.
 #' @param plotBy Score to be used for plotting. Presently only coverage.
 #' @param removeDup Remove duplicates before calculating coverage.
+#' @param verbose TRUE or FALSE
 #' @param format BAM or BigWig
 #' @param seqlengths Chromosomes to be used. If missing will report all.
 #' @param forceFragment Centre fragment and force consistent fragment width.
 #' @return ChIPprofile A ChIPprofile object. 
 #' @export
 #' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2
-#' @include allClasses.r
+#' @include allClasses.r plots.R
 regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL){
   if(!verbose){
     suppressMessages(runRegionPlot())
@@ -331,7 +333,13 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     )
     filteredRanges <- c(testRangesPos,testRangesNeg)
     profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$name)])
-    return(new("ChIPprofile",profileSample,profile=list()))
+    exptData(profileSample) <- list(names=c(bamFile))
+    paramList <- list("nOfWindows"=nOfWindows,
+                      "distanceInRegionStart"=distanceInRegionStart,
+                      "distanceInRegionEnd"=distanceInRegionEnd,
+                      "distanceOutRegionStart"=distanceOutRegionStart,
+                      "distanceOutRegionEnd"=distanceOutRegionEnd)
+    return(new("ChIPprofile",profileSample,params=paramList))
   } 
 }
 

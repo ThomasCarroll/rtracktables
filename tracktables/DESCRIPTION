@@ -27,4 +27,5 @@ Imports:
     reshape2
 Collate:
     'allClasses.r'
+    'plots.R'
     'tracktables.R'
