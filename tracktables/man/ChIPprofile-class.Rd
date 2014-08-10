@@ -6,9 +6,4 @@
 \description{
 The ChIPprofile class
 }
-\section{Slots}{
-
-\describe{
-\item{\code{profile}}{list}
-}}
 

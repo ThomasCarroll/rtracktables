@@ -15,8 +15,10 @@
 #' @param object A ChIPprofile object 
 plotRegion.ChIPprofile <- function(object)
 {
+  #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
   profileList <- lapply(c(assays(object)),colMeans)
-  profileFrame <- do.call(cbind,profileList)
+  #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowData(object)$name %in% x,])}))
+  profileFrame <- do.call(function(x)cbind(unlist(x)),profileList)
   colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
   axisIndex=c(seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)),
               (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
