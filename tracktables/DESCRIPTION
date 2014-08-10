@@ -22,4 +22,9 @@ Imports:
     rtracklayer,
     GenomicAlignments,
     GenomicRanges,
-    XVector
+    XVector,
+    Rsamtools,
+    reshape2
+Collate:
+    'allClasses.r'
+    'tracktables.R'
