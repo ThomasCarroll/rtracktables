@@ -326,7 +326,9 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     #elementMetadata(reportRanges) <- cbind(elementMetadata(reportRanges),AllRegionStart,meansMat,AllRegionEnd)
     #new("ChIPprofile",reportRanges,profile=list())
     #return(profiles)
-    profileMat <- cbind(AllRegionStart,meansMat,AllRegionEnd)
+    profileMat <- cbind(AllRegionStart[order(rownames(AllRegionStart)),],
+                        meansMat[order(rownames(meansMat)),],
+                        AllRegionEnd[order(rownames(AllRegionEnd)),])
     colnames(profileMat) <- c(paste0("Region_Start",seq(0-distanceOutRegionStart,-1)),"Region_Start",paste0("Region_Start",seq(1,distanceOutRegionStart)),
     paste0(seq(1:100),"%_ofRegion"),
     paste0("Region_End",seq(0-distanceOutRegionEnd,-1)),"Region_End",paste0("Region_End",seq(1,distanceOutRegionEnd))
