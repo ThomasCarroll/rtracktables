@@ -42,6 +42,7 @@ plotRegion.ChIPprofile <- function(object,gsets=NULL)
   #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowData(object)$name %in% x,])}))
   profileFrame <- do.call(function(x)rbind(x),profileList)
   colnames(profileFrame) <- c("xIndex","Group","Score","Sample")
+  #profileFrame <- profileFrame[order(profileFrame[c("Sample","Group","xIndex")]),]
   P <- ggplot(profileFrame,
               aes(x=xIndex,y=Score,group=Sample,colour=Group))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
   P <- P + scale_x_discrete(breaks=c(1,object@params$distanceInRegionStart+1,
