@@ -1,0 +1,64 @@
+%\VignetteIndexEntry{Visualising sequencing data using tracktables}
+%\VignettePackage{tracktables}
+%\VignetteEngine{knitr::knitr}
+
+% To compile this document
+% library('knitr'); rm(list=ls()); knit('tracktables.Rnw')
+
+\documentclass[12pt]{article}
+
+
+<<knitr, echo=FALSE, results="hide">>=
+library("knitr")
+opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
+               fig.width=4,fig.height=4.5,
+               message=FALSE)
+@ 
+
+<<style, eval=TRUE, echo=FALSE, results="asis">>=
+BiocStyle::latex()
+@
+
+<<loadDESeq2, echo=FALSE>>=
+library("tracktables")
+@
+
+
+\author{Thomas Carroll$^{1*}$\\[1em] \small{$^{1}$ Bioinformatics Facility, MRC Clincal Sciences Centre;} \\ \small{\texttt{$^*$thomas.carroll (at)imperial.ac.uk}}}
+
+\title{Visualising ChIP-seq data -- tracktables}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ 
+ tracktables provides a set of tools to organise visualise your ChIP-seq data.
+  \vspace{1em}
+  
+  \end{abstract}
+
+<<options, results="hide", echo=FALSE>>=
+options(digits=3, width=80, prompt=" ", continue=" ")
+@
+
+\newpage
+
+\tableofcontents
+
+\section{Standard workflow}
+
+\subsection{Quick start}
+
+Simple guide to the two main sets of functions in tracktables.
+The first set of functions are for summarising and visualising coverage of genomic regions across samples and gene/genomic-interval sets.
+The regionPlot function calculates normalised coverage across or over user specified regions to produce \Rclass{ChIPprofile} object.
+
+<<quick, eval=FALSE>>=
+print("Coming Soon!")
+@
+
+\bibliography{library}
+
+\end{document}

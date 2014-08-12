@@ -8,7 +8,7 @@
 \usage{
 \S4method{plotRegion}{ChIPprofile}(object)
 
-\S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile")
+\S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL)
 }
 \arguments{
 \item{object}{A ChIPprofile object}
