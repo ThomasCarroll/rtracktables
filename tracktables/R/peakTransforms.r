@@ -25,11 +25,12 @@ findConsensusRegions(testRanges,method="majority"){
   
 }
 findSummit <- function(testRanges,bamFile,FragmentLength){
-  total <- readGAlignmentsFromBam(bamFile,param=Param)
+  total <- readGAlignmentsFromBam(bamFile)
   message("..Done.\nRead in ",length(total)," reads")
   message("Extending reads to fragmentlength of ",FragmentLength,appendLF=F)
   temp <- resize(as(total,"GRanges"),FragmentLength,"start")
   rm(total)
   cov <- coverage(temp)
   rm(total)
+  #test <- ChIPQC:::findCovMaxPos(temp,mm9PC[seqnames(mm9PC) %in% "chr1"],c("chr1"=300035600),150
 }
