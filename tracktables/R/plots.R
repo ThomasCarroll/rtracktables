@@ -35,7 +35,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL)
    colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
   }else{
     profileList <- lapply(c(assays(object)),colMeans)
-    profileFrame <- do.call(function(x)cbind(x),profileList)
+    profileFrame <- do.call(cbind,profileList)
     colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
     
     axisIndex=c(seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)),
