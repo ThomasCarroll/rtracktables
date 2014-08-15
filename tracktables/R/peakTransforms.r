@@ -25,7 +25,7 @@ runConsensusRegions(testRanges,method="majority"){
   
 }
 
-runGetShifts <- function(reads,ChrLengths,ChrOfInterestshift,WindowStart,shiftWindowStart=1,shiftWindowEnd=400){
+runGetShifts <- function(reads,ChrLengths,ChrOfInterestshift,shiftWindowStart=1,shiftWindowEnd=400){
 reads <- reads[seqnames(reads) %in% ChrOfInterestshift]
 ChrLengths <- seqlengths(reads)
 PosCoverage <- coverage(IRanges(start(reads[strand(reads)=="+"]),start(reads[strand(reads)=="+"])),width=ChrLengths[names(ChrLengths) %in% ChrOfInterestshift])
@@ -34,15 +34,16 @@ message("Calculating shift for ",ChrOfInterestshift,"\n")
 ShiftsTemp <- shiftApply(seq(shiftWindowStart,shiftWindowEnd),PosCoverage,NegCoverage,RleSumAny, verbose = TRUE)         
 return(ShiftsTemp)
 }
-getShifts <- function(reads,ChrLengths,x,WindowStart,
+getShifts <- function(reads,ChrLengths,
                       shiftWindowStart=1,shiftWindowEnd=400){
 shiftMat <- do.call(cbind,bplapply(names(ChrLengths),function(x)
-runGetShifts(reads,ChrLengths,x,WindowStart,
+runGetShifts(reads,ChrLengths,x,
           shiftWindowStart=1,shiftWindowEnd=400)))
-cc_scores <- (rowSums(shiftMat)[1]-rowSums(shiftMat))/rowSums(shiftMat)[1])
+cc_scores <- (rowSums(shiftMat)[1]-rowSums(shiftMat))/rowSums(shiftMat)[1]
+return(cc_scores)
 }
 
-getShifts <- function(reads,ChrLengths,x,WindowStart,
+getShifts(reads,ChrLengths,
                       shiftWindowStart=1,shiftWindowEnd=400)
   
 funFindSummit <- function(testRanges,bamFile,FragmentLength){
