@@ -1,10 +1,7 @@
+
 findconsensusRegions <- function(testRanges,bamFiles=NULL,method="majority",summit="mean",resizepeak="asw",overlap="any",fragmentLength=NULL,
-                                 NonPrimaryPeaks=list(withinsample="drop",betweensample="mean"){
-  if(!verbose){
-    suppressMessages(
-      runRegionPlot()
-    )
-  }
+                                 NonPrimaryPeaks=list(withinsample="drop",betweensample="mean")){
+
   testRanges <- GRangesList(
     bplapply(
       testRanges,
@@ -25,24 +22,32 @@ findconsensusRegions <- function(testRanges,bamFiles=NULL,method="majority",summ
     overlap="any"
     )
   if(unlist(NonPrimaryPeaks["withinsample"])=="drop"){
-    ans <- bplapply(ans,function(x)
+    consensensusAns <- bplapply(ans,function(x)
       dropNonPrimary(x,consensusRanges)
-    ) 
+    )
     ansSummits <- do.call(cbind,bplapply(ans,function(x)
       extractSummits(x,consensusRanges)
     ))
-    extractScores <- do.call(cbind,bplapply(ans,function(x)
-      extractSummits(x,consensusRanges)
-    ))    
+    ansSummitScores <- do.call(cbind,bplapply(ans,function(x)
+      extractScores(x,consensusRanges)
+    )) 
+    if(unlist(NonPrimaryPeaks["betweensample"])=="mean"){
+      meanSummits <- rowMeans(ansSummits,na.rm=TRUE)
+    }
+    if(unlist(NonPrimaryPeaks["betweensample"])=="weightedmean"){
+      #meanSummits <- rowMeans(ansSummits,na.omit=TRUE)
+      meanSummits <- round(sapply(seq(1,nrow(ansSummits)),function(x)weighted.mean(ansSummits[x,],ansSummitScores[x,])))
+    }
   }  
-  
-  return(result)  
+  start(consensusRanges) <- end(consensusRanges) <- meanSummits
+  return(consensusRanges)  
 }
 
 extractSummits <- function(x,consensusRanges){
   summits <- vector("numeric",length=length(consensusRanges))
   overMat <- as.matrix(findOverlaps(consensusRanges,x))
   summits[overMat[,1]] <- as.vector(start(x[overMat[,2]]))
+  return(summits)
 }
 extractScores <- function(x,consensusRanges,score="summitScores"){
   scores <- vector("numeric",length=length(consensusRanges))
@@ -56,8 +61,9 @@ dropNonPrimary <- function(x,consensusRanges,id="elementMetadata.ID",score="summ
   tempConsensusRanges <- consensusRanges[mat[,1],]
   elementMetadata(tempConsensusRanges) <- elementMetadata(x[mat[,2]])[,c(id,score)]
   tempConsensusRanges <- tempConsensusRanges[order(elementMetadata(tempConsensusRanges)[,score],decreasing=T),]  
-  tempConsensusRanges <- tempConsensusRanges[match(unique(tempConsensusRanges[,id]),tempConsensusRanges[,id]),]
-  return(tempConsensusRanges)
+  primaryIDs <- elementMetadata(tempConsensusRanges[match(unique(tempConsensusRanges[,id]),tempConsensusRanges[,id])])[,id]
+  x <- x[elementMetadata(x)[,id] %in% primaryIDs]
+  return(x)
 }
 
 summitPipeline <- function(reads,peakfile,fragmentLength,readlength){
@@ -78,11 +84,14 @@ summitPipeline <- function(reads,peakfile,fragmentLength,readlength){
   ccscores <- getShifts(reads,ChrLengths,shiftWindowStart=1,shiftWindowEnd=400)
   fragmentLength <- getFragmentLength(ccscores,readlength)
   message("done")
+  message("Extending reads..",appendLF=FALSE)  
+  reads <- resize(as(reads,"GRanges"),fragmentLength,"start")
+  message("done")
   message("Finding summit locations..",appendLF=FALSE)
-  peaks <- runFindSummit(testRanges,reads,fragmentLength)
+  peaks <- runFindSummit(testRanges,reads,fragmentLength=NULL)
   message("done")
   message("Scoring summits..",appendLF=FALSE)
-  peaks <- getSummitScore(reads,peaks,fragmentLength,score="height")
+  peaks <- getSummitScore(reads,peaks,fragmentLength=NULL,score="height")
   message("done")
   return(peaks)
 }
@@ -91,6 +100,7 @@ runConsensusRegions <- function(testRanges,method="majority",overlap="any"){
     if(class(testRanges) == "GRangesList" & length(testRanges) > 1){
       
       reduced <- reduce(unlist(testRanges))
+      consensusIDs <- paste0("consensus_",seq(1,length(reduced)))
       elementMetadata(reduced) <- 
       do.call(cbind,lapply(testRanges,function(x)(reduced %over% x)+0))
       if(method=="majority"){
@@ -99,7 +109,8 @@ runConsensusRegions <- function(testRanges,method="majority",overlap="any"){
       if(method=="none"){
         reducedConsensus <- reduced
       }
-    
+    consensusIDs <- paste0("consensus_",seq(1,length(reducedConsensus)))
+    elementMetadata(reducedConsensus) <- cbind(as.data.frame(elementMetadata(reducedConsensus)),consensusIDs)
     return(reducedConsensus)
     
   }
@@ -132,42 +143,42 @@ getFragmentLength <- function(x,readLength){
   
 }
   
-runFindSummit <- function(testRanges,reads,FragmentLength){
+runFindSummit <- function(testRanges,reads,fragmentLength=NULL){
   if(is.character(reads)){
     reads <- readGAlignmentsFromBam(reads)
   }
-  message("..Done.\nRead in ",length(reads)," reads")
-  message("Extending reads to fragmentlength of ",FragmentLength,appendLF=F)
-  temp <- resize(as(reads,"GRanges"),FragmentLength,"start")
-  rm(reads)
+  if(!is.null(fragmentLength)){
+    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=F)
+    reads <- resize(as(reads,"GRanges"),fragmentLength,"start")
+    message("done")
+  }
   test <- do.call(c,
                   bplapply(
-    unique(seqnames(temp))[unique(seqnames(temp)) %in% unique(seqnames(testRanges))],
+    unique(seqnames(reads))[unique(seqnames(reads)) %in% unique(seqnames(testRanges))],
     function(x) 
-    ChIPQC:::findCovMaxPos(temp[seqnames(testRanges) %in% x],testRanges[seqnames(testRanges) %in% x],seqlengths(temp)[names(seqlengths(temp)) %in% x],FragmentLength)
+    ChIPQC:::findCovMaxPos(reads[seqnames(testRanges) %in% x],testRanges[seqnames(testRanges) %in% x],seqlengths(reads)[names(seqlengths(reads)) %in% x],fragmentLength)
     )
   )
   return(test)                                        
 }
 
-getSummitScore <- function(reads,summits,FragmentLength,score="height"){
+getSummitScore <- function(reads,summits,fragmentLength=NULL,score="height"){
   if(is.character(reads)){
     reads <- readGAlignmentsFromBam(reads)
   }
-  message("..Done.\nRead in ",length(reads)," reads")
-  message("Extending reads to fragmentlength of ",FragmentLength,appendLF=F)
-  temp <- resize(as(reads,"GRanges"),FragmentLength,"start")
-  rm(reads)
+  if(!is.null(fragmentLength)){
+    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=F)
+    reads <- resize(as(reads,"GRanges"),fragmentLength,"start")
+    message("done")
+  }
   test <- do.call(c,
                   bplapply(
-                    as.vector(unique(seqnames(temp))[unique(seqnames(temp)) %in% unique(seqnames(summits))]),
+                    as.vector(unique(seqnames(reads))[unique(seqnames(reads)) %in% unique(seqnames(summits))]),
                     function(x) 
-                      runGetSummitScore(temp[seqnames(temp) %in% x],summits[seqnames(summits) %in% x],seqlengths(temp)[names(seqlengths(temp)) %in% x])
+                      runGetSummitScore(reads[seqnames(reads) %in% x],summits[seqnames(summits) %in% x],seqlengths(reads)[names(seqlengths(reads)) %in% x])
                   )
   )
-  return(test)                                        
-  
-  
+  return(test)                                         
 }
 runGetSummitScore <- function(reads,summits,ChrOfInterestshift,FragmentLength=150,score="height"){
     
@@ -214,3 +225,64 @@ bamFiles <- list("/Users/tcarroll/Downloads/CTCFCyclingTHDupMarked.bam","/Users/
 testRanges <- list("/Users/tcarroll/Downloads/CTCFCyclingTH_WithInput_InputCyclingTH_peaks.bed","/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
 names(testRanges) <- c("Cycling","DP")
 names(bamFiles) <- c("Cycling","DP") 
+consensusRegions <- findconsensusRegions(testRanges,bamFiles)
+tt2 <- ChIPQC:::GetGRanges(testRanges[[2]])[ChIPQC:::GetGRanges(testRanges[[2]]) %over% consensusRegions]
+tt1 <- ChIPQC:::GetGRanges(testRanges[[1]])[ChIPQC:::GetGRanges(testRanges[[1]]) %over% consensusRegions]
+test <- bplapply(bamFiles,
+            function(x)
+            regionPlot(x,consensusRegions,style="point",format="bam",FragmentLength=130)
+)
+
+test2 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,ChIPQC:::GetGRanges(testRanges[[2]]),style="point",format="bam",FragmentLength=130)
+)
+test22 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,ChIPQC:::GetGRanges(testRanges[[1]]),style="point",format="bam",FragmentLength=130)
+)
+
+testset <- reduce(c(ChIPQC:::GetGRanges(testRanges[[2]]),ChIPQC:::GetGRanges(testRanges[[1]])))
+
+test3 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,testset,style="point",format="bam",FragmentLength=130)
+)
+
+testtt1 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,tt1,style="point",format="bam",FragmentLength=130)
+)
+testtt2 <- bplapply(bamFiles,
+                    function(x)
+                      regionPlot(x,tt2,style="point",format="bam",FragmentLength=130)
+)
+
+### Is the ordering creating a skew again for average plot in selecting summit!
+par(mfrow=c(3,2))
+plot(colMeans(unlist(test[[1]])),type="l")
+plot(colMeans(unlist(test[[2]])),type="l")
+plot(colMeans(unlist(test2[[1]])),type="l")
+plot(colMeans(unlist(test2[[2]])),type="l")
+plot(colMeans(unlist(test3[[1]])),type="l")
+plot(colMeans(unlist(test3[[2]])),type="l")
+#testset <- reduce(c(ChIPQC:::GetGRanges(testRanges[[2]]),ChIPQC:::GetGRanges(testRanges[[1]])))
+dev.off()
+plot(colMeans(unlist(test[[1]])),type="l")
+lines(colMeans(unlist(test3[[1]])),col="red")
+lines(colMeans(unlist(test2[[1]])),col="blue")
+lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
+
+plot(colMeans(unlist(test[[2]])),type="l")
+lines(colMeans(unlist(test3[[2]])),col="red")
+lines(colMeans(unlist(test2[[2]])),col="blue")
+lines(colMeans(unlist(test22[[2]])),col="blue",lty=2)
+lines(colMeans(unlist(testtt2[[2]])),col="darkgreen",lty=2)
+lines(colMeans(unlist(testtt1[[2]])),col="purple",lty=2)
+
+plot(colMeans(unlist(test[[1]]))[1480:1520],type="l")
+lines(colMeans(unlist(test3[[1]]))[1480:1520],col="red")
+lines(colMeans(unlist(test2[[1]])),col="blue")
+lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
+lines(colMeans(unlist(testtt2[[1]])),col="darkgreen",lty=2)
+lines(colMeans(unlist(testtt1[[1]])),col="purple",lty=2)
