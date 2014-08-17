@@ -476,3 +476,33 @@ assays(temp) <- c(assays(temp),assays(nuc0h80))
 exptData(temp)[[1]] <- c("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam","nuc")
 plotRegion(temp,gst)+aes(colour=Sample,linetype=Group
                          )+facet_wrap(~Sample,scales="free_y")+xlim(0,3000)
+
+
+### Is the ordering creating a skew again for average plot in selecting summit!
+par(mfrow=c(3,2))
+plot(colMeans(unlist(test[[1]])),type="l")
+plot(colMeans(unlist(test[[2]])),type="l")
+plot(colMeans(unlist(test2[[1]])),type="l")
+plot(colMeans(unlist(test2[[2]])),type="l")
+plot(colMeans(unlist(test3[[1]])),type="l")
+plot(colMeans(unlist(test3[[2]])),type="l")
+#testset <- reduce(c(ChIPQC:::GetGRanges(testRanges[[2]]),ChIPQC:::GetGRanges(testRanges[[1]])))
+dev.off()
+plot(colMeans(unlist(test[[1]])),type="l")
+lines(colMeans(unlist(test3[[1]])),col="red")
+lines(colMeans(unlist(test2[[1]])),col="blue")
+lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
+
+plot(colMeans(unlist(test[[2]])),type="l")
+lines(colMeans(unlist(test3[[2]])),col="red")
+lines(colMeans(unlist(test2[[2]])),col="blue")
+lines(colMeans(unlist(test22[[2]])),col="blue",lty=2)
+lines(colMeans(unlist(testtt2[[2]])),col="darkgreen",lty=2)
+lines(colMeans(unlist(testtt1[[2]])),col="purple",lty=2)
+
+plot(colMeans(unlist(test[[1]]))[1480:1520],type="l")
+lines(colMeans(unlist(test3[[1]]))[1480:1520],col="red")
+lines(colMeans(unlist(test2[[1]])),col="blue")
+lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
+lines(colMeans(unlist(testtt2[[1]])),col="darkgreen",lty=2)
+lines(colMeans(unlist(testtt1[[1]])),col="purple",lty=2)
