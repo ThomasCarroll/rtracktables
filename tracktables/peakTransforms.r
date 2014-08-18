@@ -1,4 +1,15 @@
-
+#' Plot coverage of points or regions.
+#'
+#' @param testRanges Named character vector of region locations 
+#' @param bamFile Named character vector of bamFile locations
+#' @param method Method to select reproducible summits to merge.
+#' @param summit Only mean avaialble
+#' @param resizepeak Only asw available
+#' @param overlap Type of overlap to consider for finding consensus sites
+#' @param fragmentLength Predicted fragment length. Set to NULL to auto-calculate
+#' @param NonPrimaryPeaks A list of parameters to deal with non primary peaks in consensus regions.
+#' @return Consensus A GRanges object of consensus summits. 
+#' @export
 findconsensusRegions <- function(testRanges,bamFiles=NULL,method="majority",summit="mean",resizepeak="asw",overlap="any",fragmentLength=NULL,
                                  NonPrimaryPeaks=list(withinsample="drop",betweensample="mean")){
 
@@ -65,7 +76,14 @@ dropNonPrimary <- function(x,consensusRanges,id="elementMetadata.ID",score="summ
   x <- x[elementMetadata(x)[,id] %in% primaryIDs]
   return(x)
 }
-
+#' Returns summits and summmit scores after optional fragment length prediction and read extension
+#'
+#' @param peakFile GRanges of region 
+#' @param reads Character vector of bamFile location or GAlignments object
+#' @param fragmentLength Predicted or calculated fragment length. Set as NULL for auto prediction of fragment length
+#' @param readlength Read length of alignments.
+#' @return Summits A GRanges object of summits and summmit scores.
+#' @export
 summitPipeline <- function(reads,peakfile,fragmentLength,readlength){
   message("Reading in peaks..",appendLF=FALSE)
   testRanges <- ChIPQC:::GetGRanges(peakfile)

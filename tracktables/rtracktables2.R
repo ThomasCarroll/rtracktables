@@ -450,16 +450,33 @@ pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.
 pol0h <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
 
 nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
-nuc6h80 <- regionPlot("/Users/tcarroll//Downloads//mergedOHT.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+#nuc6h80 <- regionPlot("/Users/tcarroll//Downloads//mergedOHT.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
 
+#########
+###########
+library(Hmisc)
+library(GenomicRanges)
+
+mm9Genes <- read.delim("/Users/tcarroll/Downloads/mm9Genes_May2012.txt",sep="\t",h=T)
+
+mm9GeneRanges <- GRanges(seqnames=paste0("chr",mm9Genes[,3]),ranges=IRanges(start=mm9Genes[,1],end=mm9Genes[,2]),strand=mm9Genes[,4],name=mm9Genes[,5],biotype=mm9Genes[,6])
+JustChrOfInterest <- unique(as.vector(seqnames(mm9GeneRanges)))[grep("chr\\d.|chr\\d|chrX|chrY|chrM",unique(as.vector(seqnames(mm9GeneRanges))))]
+mm9PC <- mm9GeneRanges[mm9GeneRanges$biotype == "protein_coding"]
+mm9PC <- mm9PC[order(width(mm9PC),decreasing=T)]
+mm9PC <- mm9PC[match(unique(mm9PC$name),mm9PC$name)]
+mm9PC <- mm9PC[!mm9PC$name == ""]
+mm9PC <- mm9PC[seqnames(mm9PC) %in% JustChrOfInterest]
+mm9PC <- mm9PC[width(mm9PC) > 200]
 
 AllNames <- mm9PC$name
+
+
+
 preB1 <- read.delim("/Users/tcarroll/Downloads/GSM1296547_12078.rpkm.txt",sep="\t",h=T)
 preB2 <- read.delim("/Users/tcarroll/Downloads/GSM1296548_12079.rpkm.txt",sep="\t",h=T)
+
 preB1 <- cbind(gsub(":.*","",preB1[,1]),preB1)
 preB2 <- cbind(gsub(":.*","",preB2[,1]),preB2)
-
-library(Hmisc)
 mergedPreB <- merge(preB1,preB2,by=1,all=T)
 mergedPreBRes <- cbind(as.vector(mergedPreB[,1]),apply(mergedPreB,1,function(x) as.numeric(x[3])+as.numeric(x[5])/2))
 mergedPreBRes <- mergedPreBRes[mergedPreBRes[,1] %in% toupper(AllNames),]
@@ -467,16 +484,106 @@ mergedPreBRes <- mergedPreBRes[order(as.numeric(mergedPreBRes[,2]),decreasing=T)
 top1000byRNAseq <- capitalize(tolower(mergedPreBRes[1:1000,1]))
 mergedPreBRes <- mergedPreBRes[order(as.numeric(mergedPreBRes[,2]),decreasing=F),]
 bottom1000byRNAseq <- capitalize(tolower(mergedPreBRes[1:1000,1]))
-pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam",mm9PC,style="region",format="bam")
-nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+
 gst <- list(top1000byRNAseq,bottom1000byRNAseq)
 names(gst) <- c("top","bottom")
+
+########
+
+
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam",mm9PC,style="region",format="bam")
+nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+
+
+plotRegion(pol6h)
+plotRegion(nuc0h80)
 temp <- pol6h
 assays(temp) <- c(assays(temp),assays(nuc0h80))
+
 exptData(temp)[[1]] <- c("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam","nuc")
+
 plotRegion(temp,gst)+aes(colour=Sample,linetype=Group
                          )+facet_wrap(~Sample,scales="free_y")+xlim(0,3000)
 
+bamFiles <- list("/Users/tcarroll/Downloads/CTCFCyclingTHDupMarked.bam","/Users/tcarroll/Downloads/DP_CTCFDupMarked.bam")
+testRanges <- list("/Users/tcarroll/Downloads/CTCFCyclingTH_WithInput_InputCyclingTH_peaks.bed","/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+names(testRanges) <- c("Cycling","DP")
+names(bamFiles) <- c("Cycling","DP") 
+
+consensusRegions <- findconsensusRegions(testRanges,bamFiles)
+tt2 <- ChIPQC:::GetGRanges(testRanges[[2]])[ChIPQC:::GetGRanges(testRanges[[2]]) %over% consensusRegions]
+tt1 <- ChIPQC:::GetGRanges(testRanges[[1]])[ChIPQC:::GetGRanges(testRanges[[1]]) %over% consensusRegions]
+
+test <- bplapply(bamFiles,
+                 function(x)
+                   regionPlot(x,consensusRegions,style="point",format="bam",FragmentLength=130)
+)
+
+testset <- reduce(c(ChIPQC:::GetGRanges(testRanges[[2]]),ChIPQC:::GetGRanges(testRanges[[1]])))
+
+test3 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,testset,style="point",format="bam",FragmentLength=130)
+)
+
+testtt1 <- bplapply(bamFiles,
+                    function(x)
+                      regionPlot(x,tt1,style="point",format="bam",FragmentLength=130)
+)
+testtt2 <- bplapply(bamFiles,
+                    function(x)
+                      regionPlot(x,tt2,style="point",format="bam",FragmentLength=130)
+)
+
+### Is the ordering creating a skew again for average plot in selecting summit!
+reads <- "/Users/tcarroll/Downloads/CTCF.cycling.th1DupMarked.bam"
+reads <- "/Users/tcarroll/Downloads/DP_CTCFDupMarked.bam"
+peakfile <- "/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed"
+testRanges <- ChIPQC:::GetGRanges(peakfile)
+ChrLengths <- scanBamHeader(reads)[[1]]$targets
+ccscores <- getShifts(reads,ChrLengths,shiftWindowStart=1,shiftWindowEnd=400)
+fragmentLength <- getFragmentLength(ccscores,36)
+peaks <- runFindSummit(testRanges,reads,fragmentLength)
+plott <- regionPlot(reads,peaks,fragmentLength)
+plott2 <- regionPlot(reads,testRanges,fragmentLength)
+plot(colMeans(plott)[1400:1600],type="l")
+lines(colMeans(plott2)[1400:1600],col="red")
+bamFiles <- list("/Users/tcarroll/Downloads/CTCFCyclingTHDupMarked.bam","/Users/tcarroll/Downloads/DP_CTCFDupMarked.bam")
+testRanges <- list("/Users/tcarroll/Downloads/CTCFCyclingTH_WithInput_InputCyclingTH_peaks.bed","/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+names(testRanges) <- c("Cycling","DP")
+names(bamFiles) <- c("Cycling","DP") 
+consensusRegions <- findconsensusRegions(testRanges,bamFiles)
+tt2 <- ChIPQC:::GetGRanges(testRanges[[2]])[ChIPQC:::GetGRanges(testRanges[[2]]) %over% consensusRegions]
+tt1 <- ChIPQC:::GetGRanges(testRanges[[1]])[ChIPQC:::GetGRanges(testRanges[[1]]) %over% consensusRegions]
+test <- bplapply(bamFiles,
+                 function(x)
+                   regionPlot(x,consensusRegions,style="point",format="bam",FragmentLength=130)
+)
+
+test2 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,ChIPQC:::GetGRanges(testRanges[[2]]),style="point",format="bam",FragmentLength=130)
+)
+test22 <- bplapply(bamFiles,
+                   function(x)
+                     regionPlot(x,ChIPQC:::GetGRanges(testRanges[[1]]),style="point",format="bam",FragmentLength=130)
+)
+
+testset <- reduce(c(ChIPQC:::GetGRanges(testRanges[[2]]),ChIPQC:::GetGRanges(testRanges[[1]])))
+
+test3 <- bplapply(bamFiles,
+                  function(x)
+                    regionPlot(x,testset,style="point",format="bam",FragmentLength=130)
+)
+
+testtt1 <- bplapply(bamFiles,
+                    function(x)
+                      regionPlot(x,tt1,style="point",format="bam",FragmentLength=130)
+)
+testtt2 <- bplapply(bamFiles,
+                    function(x)
+                      regionPlot(x,tt2,style="point",format="bam",FragmentLength=130)
+)
 
 ### Is the ordering creating a skew again for average plot in selecting summit!
 par(mfrow=c(3,2))
@@ -500,8 +607,8 @@ lines(colMeans(unlist(test22[[2]])),col="blue",lty=2)
 lines(colMeans(unlist(testtt2[[2]])),col="darkgreen",lty=2)
 lines(colMeans(unlist(testtt1[[2]])),col="purple",lty=2)
 
-plot(colMeans(unlist(test[[1]]))[1480:1520],type="l")
-lines(colMeans(unlist(test3[[1]]))[1480:1520],col="red")
+plot(colMeans(unlist(test[[1]])),type="l")
+lines(colMeans(unlist(test3[[1]])),col="red")
 lines(colMeans(unlist(test2[[1]])),col="blue")
 lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
 lines(colMeans(unlist(testtt2[[1]])),col="darkgreen",lty=2)
