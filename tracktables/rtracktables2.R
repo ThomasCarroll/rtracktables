@@ -493,6 +493,7 @@ names(gst) <- c("top","bottom")
 
 pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam",mm9PC,style="region",format="bam")
 nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig",distanceInRegionStart=200,distanceInRegionEnd=200)
 
 
 plotRegion(pol6h)

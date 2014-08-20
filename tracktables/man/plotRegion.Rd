@@ -8,10 +8,15 @@
 \usage{
 \S4method{plotRegion}{ChIPprofile}(object)
 
-\S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL)
+\S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
+  plotregion = "full")
 }
 \arguments{
 \item{object}{A ChIPprofile object}
+
+\item{gts}{A list of character vectors and GRanges}
+
+\item{plotregion}{region to plot}
 }
 \description{
 A function to plot regions
