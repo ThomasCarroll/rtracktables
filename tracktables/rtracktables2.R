@@ -555,6 +555,11 @@ names(bamFiles) <- c("Cycling","DP")
 consensusRegions <- findconsensusRegions(testRanges,bamFiles)
 tt2 <- ChIPQC:::GetGRanges(testRanges[[2]])[ChIPQC:::GetGRanges(testRanges[[2]]) %over% consensusRegions]
 tt1 <- ChIPQC:::GetGRanges(testRanges[[1]])[ChIPQC:::GetGRanges(testRanges[[1]]) %over% consensusRegions]
+
+tt2 <- ChIPQC:::GetGRanges(testRanges[[2]])
+
+ctcf <- regionPlot("/Users/tcarroll/Downloads/DP_CTCFDupMarked.bam",tt2,style="point",format="bam",FragmentLength=130)
+
 test <- bplapply(bamFiles,
                  function(x)
                    regionPlot(x,consensusRegions,style="point",format="bam",FragmentLength=130)

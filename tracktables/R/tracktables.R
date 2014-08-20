@@ -118,7 +118,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   message("Filtered ",length(testRanges)-length(temptestranges)," of ",length(testRanges)," regions")
   testRanges <- temptestranges
   message("Splitting regions by Watson and Crick strand..",appendLF = FALSE)
-  
+  elementMetadata(testRanges) <- cbind(elementMetadata(testRanges),data.frame(giID = paste0("giID",seq(1,length(testRanges)))))
   strand(testRanges[strand(testRanges) == "*"]) <- "+"
   testRangesPos <- testRanges[strand(testRanges) == "+"]
   testRangesNeg <- testRanges[strand(testRanges) == "-"]
@@ -195,34 +195,46 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   if(style=="point"){
     testRangesPos <- resize(testRangesPos,1,"center")
     testRangesNeg <- resize(testRangesNeg,1,"center")
-    RangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceUpStart,start(testRangesPos)+distanceDownEnd),name=testRangesPos$name)
-    RangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(end(testRangesNeg)-distanceDownEnd,end(testRangesNeg)+distanceUpStart),name=testRangesNeg$name)  
+    RangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceUpStart,start(testRangesPos)+distanceDownEnd),strand=Rle("+",length(testRangesPos)),elementMetadata(testRangesPos))
+    RangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(end(testRangesNeg)-distanceDownEnd,end(testRangesNeg)+distanceUpStart),strand=Rle("-",length(testRangesNeg)),elementMetadata(testRangesNeg))  
     
     for(c in 1:length(chromosomes)){
       if(length(RangesPos[seqnames(RangesPos) %in% chromosomes[c]]) > 0){
         PosRegionMat <- matrix(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(RangesPos[seqnames(RangesPos) %in% chromosomes[c]])]),ncol=mean(width(RangesPos)),byrow=TRUE)
-        rownames(PosRegionMat) <- RangesPos[seqnames(RangesPos) %in% chromosomes[c]]$name
+        rownames(PosRegionMat) <- RangesPos[seqnames(RangesPos) %in% chromosomes[c]]$giID
         #      print("done1.3")
       }
       if(length(RangesNeg[seqnames(RangesNeg) %in% chromosomes[c]]) > 0){
         NegRegionMat <- matrix(rev(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(RangesNeg[seqnames(RangesNeg) %in% chromosomes[c]])])),ncol=mean(width(RangesNeg)),byrow=TRUE)
-        rownames(NegRegionMat) <- RangesNeg[seqnames(RangesNeg) %in% chromosomes[c]]$name
+        rownames(NegRegionMat) <- RangesNeg[seqnames(RangesNeg) %in% chromosomes[c]]$giID
       }    
       RegionsMat <- rbind(RegionsMat,PosRegionMat,NegRegionMat)
     }
-    return(RegionsMat)
+    profileMat <- RegionsMat
+    colnames(profileMat) <- c(paste0("Point_Centre",seq(0-distanceOutRegionStart,-1)),"Point_Centre",paste0("Point_Centre",seq(1,distanceOutRegionStart)))
+    filteredRanges <- c(RangesPos,RangesNeg)
+    profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
+    exptData(profileSample) <- list(names=c(bamFile))
+    paramList <- list("nOfWindows"=nOfWindows,
+                      "style"=style,
+                      "distanceAround"=distanceAround,                      
+                      "distanceInRegionStart"=NA,
+                      "distanceInRegionEnd"=NA,
+                      "distanceOutRegionStart"=NA,
+                      "distanceOutRegionEnd"=NA)
+    return(new("ChIPprofile",profileSample,params=paramList))
   }
   if(style=="region"){
     
     message("Defining flanks of regions..",appendLF=FALSE)
     
-    startRegionRangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceOutRegionStart,start(testRangesPos)+distanceInRegionStart),name=testRangesPos$name)
-    endRegionRangesPos <- GRanges(seqnames(testRangesPos),IRanges(end(testRangesPos)-distanceInRegionEnd,end(testRangesPos)+distanceOutRegionEnd),name=testRangesPos$name)
-    startRegionRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(end(testRangesNeg)-distanceInRegionStart,end(testRangesNeg)+distanceOutRegionStart),name=testRangesNeg$name)
-    endRegionRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)-distanceOutRegionEnd,start(testRangesNeg)+distanceInRegionEnd),name=testRangesNeg$name)
+    startRegionRangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceOutRegionStart,start(testRangesPos)+distanceInRegionStart),strand=Rle("+",length(testRangesPos)),elementMetadata(testRangesPos))
+    endRegionRangesPos <- GRanges(seqnames(testRangesPos),IRanges(end(testRangesPos)-distanceInRegionEnd,end(testRangesPos)+distanceOutRegionEnd),strand=Rle("+",length(testRangesPos)),elementMetadata(testRangesPos))
+    startRegionRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(end(testRangesNeg)-distanceInRegionStart,end(testRangesNeg)+distanceOutRegionStart),strand=Rle("+",length(testRangesNeg)),elementMetadata(testRangesNeg))
+    endRegionRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)-distanceOutRegionEnd,start(testRangesNeg)+distanceInRegionEnd),strand=Rle("+",length(testRangesNeg)),elementMetadata(testRangesNeg))
     
-    testRangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)+distanceInRegionStart,end(testRangesPos)-distanceInRegionEnd),name=testRangesPos$name)
-    testRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)+distanceInRegionEnd,end(testRangesNeg)-distanceInRegionStart),name=testRangesNeg$name)     
+    testRangesPos <- GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)+distanceInRegionStart,end(testRangesPos)-distanceInRegionEnd),strand=Rle("+",length(testRangesPos)),elementMetadata(testRangesPos))
+    testRangesNeg <- GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)+distanceInRegionEnd,end(testRangesNeg)-distanceInRegionStart),strand=Rle("+",length(testRangesNeg)),elementMetadata(testRangesNeg))     
     message("...Done")
     meansList <- vector("numeric")
     grListWindowsPos <- GRanges()
@@ -244,10 +256,10 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         }
         grListWindowsPos <- c(grListWindowsPos,GRanges(seqnames(testRangesPos),IRanges(      
           start(testRangesPos)+(windows*(i-1)),
-          start(testRangesPos)+(windows*i)-1+addToWindow),name=testRangesPos$name))
+          start(testRangesPos)+(windows*i)-1+addToWindow),giID=testRangesPos$giID))
       }
     }
-    grListWindowsPos <- grListWindowsPos[order(grListWindowsPos$name)]
+    grListWindowsPos <- grListWindowsPos[order(grListWindowsPos$giID)]
     if(length(testRangesNeg) > 0){
       grWidths <- width(testRangesNeg)
       windows <- floor(grWidths%/%nOfWindows)
@@ -260,9 +272,9 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         }
         grListWindowsNeg <- c(grListWindowsNeg,GRanges(seqnames(testRangesNeg),IRanges(     
           end(testRangesNeg)-(windows*i)+1-addToWindow,
-          end(testRangesNeg)-(windows*(i-1))),name=testRangesNeg$name))
+          end(testRangesNeg)-(windows*(i-1))),giID=testRangesNeg$giID))
       }
-      grListWindowsNeg <- grListWindowsNeg[order(grListWindowsNeg$name)]
+      grListWindowsNeg <- grListWindowsNeg[order(grListWindowsNeg$giID)]
     }
     grListWindows <- c(grListWindowsPos,grListWindowsNeg)
     message("..done\n")
@@ -272,7 +284,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       message("Processing inner region windows in ",chromosomes[c])
       covPerPeak <- Views(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]],ranges(grListWindows[seqnames(grListWindows) == chromosomes[c]]))
       doubleTemp <- viewMeans(covPerPeak)
-      names(doubleTemp) <- as.vector(grListWindows[seqnames(grListWindows) == chromosomes[c]]$name)
+      names(doubleTemp) <- as.vector(grListWindows[seqnames(grListWindows) == chromosomes[c]]$giID)
       meansList <- c(meansList,doubleTemp)
       message("..done")
       message("Processing flanking windows in ",chromosomes[c])      
@@ -284,22 +296,22 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       
       if(length(startRegionRangesPos[seqnames(startRegionRangesPos) %in% chromosomes[c]]) > 0){
         tempstartRegionRangesPosMat <- matrix(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(startRegionRangesPos[seqnames(startRegionRangesPos) %in% chromosomes[c]])]),ncol=mean(width(startRegionRangesPos)),byrow=TRUE)
-        rownames(tempstartRegionRangesPosMat) <- startRegionRangesPos[seqnames(startRegionRangesPos) %in% chromosomes[c]]$name
+        rownames(tempstartRegionRangesPosMat) <- startRegionRangesPos[seqnames(startRegionRangesPos) %in% chromosomes[c]]$giID
       }
       
       if(length(endRegionRangesPos[seqnames(endRegionRangesPos) %in% chromosomes[c]]) > 0){
         tempendRegionRangesPosMat <- matrix(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(endRegionRangesPos[seqnames(endRegionRangesPos) %in% chromosomes[c]])]),ncol=mean(width(endRegionRangesPos)),byrow=TRUE)
-        rownames(tempendRegionRangesPosMat) <- endRegionRangesPos[seqnames(endRegionRangesPos) %in% chromosomes[c]]$name
+        rownames(tempendRegionRangesPosMat) <- endRegionRangesPos[seqnames(endRegionRangesPos) %in% chromosomes[c]]$giID
       }
       if(length(startRegionRangesNeg[seqnames(startRegionRangesNeg) %in% chromosomes[c]]) > 0){
         tempstartRegionRangesNegMat <- matrix(rev(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(startRegionRangesNeg[seqnames(startRegionRangesNeg) %in% chromosomes[c]])])),ncol=mean(width(startRegionRangesNeg)),byrow=TRUE)
-        rownames(tempstartRegionRangesNegMat) <- rev(startRegionRangesNeg[seqnames(startRegionRangesNeg) %in% chromosomes[c]]$name)
+        rownames(tempstartRegionRangesNegMat) <- rev(startRegionRangesNeg[seqnames(startRegionRangesNeg) %in% chromosomes[c]]$giID)
       }
       #print("done4")  
       if(length(endRegionRangesNeg[seqnames(endRegionRangesNeg) %in% chromosomes[c]]) > 0){
         #tempNegTTSMat <- matrix(rev(as.vector(unlist(Views(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]],ranges(ttsRangesNeg[seqnames(ttsRangesNeg) %in% chromosomes[c]]))))),ncol=mean(width(ttsRangesNeg)),byrow=TRUE)
         tempendRegionRangesNegMat <- matrix(rev(as.vector(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]][ranges(endRegionRangesNeg[seqnames(endRegionRangesNeg) %in% chromosomes[c]])])),ncol=mean(width(endRegionRangesNeg)),byrow=TRUE)
-        rownames(tempendRegionRangesNegMat) <- rev(endRegionRangesNeg[seqnames(endRegionRangesNeg) %in% chromosomes[c]]$name)
+        rownames(tempendRegionRangesNegMat) <- rev(endRegionRangesNeg[seqnames(endRegionRangesNeg) %in% chromosomes[c]]$giID)
       }
       #print("done5")
       
@@ -334,9 +346,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     paste0("Region_End",seq(0-distanceOutRegionEnd,-1)),"Region_End",paste0("Region_End",seq(1,distanceOutRegionEnd))
     )
     filteredRanges <- c(testRangesPos,testRangesNeg)
-    profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$name)])
+    profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
     exptData(profileSample) <- list(names=c(bamFile))
     paramList <- list("nOfWindows"=nOfWindows,
+                      "style"=style,
+                      "distanceAround"=NA,                      
                       "distanceInRegionStart"=distanceInRegionStart,
                       "distanceInRegionEnd"=distanceInRegionEnd,
                       "distanceOutRegionStart"=distanceOutRegionStart,
