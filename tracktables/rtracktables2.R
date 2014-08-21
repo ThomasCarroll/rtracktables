@@ -490,13 +490,19 @@ names(gst) <- c("top","bottom")
 
 ########
 
-
+pol0h <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarked.bam",mm9PC,style="region",format="bam")
 pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam",mm9PC,style="region",format="bam")
 nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
-pol0h <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarked.bam",mm9PC,style="region",format="bam")
 nuc0h804 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange4.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+nuc0h803 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange3.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+
+
+test <- Reduce(function(x,y) mergeChIPprofiles(x,y),c(pol0h,pol6h,nuc0h80,nuc0h804))
+test <- mergeChIPprofiles(test,nuc0h803)
 
 pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig",distanceInRegionStart=200,distanceInRegionEnd=200)
+
+
 
 
 plotRegion(pol6h)
@@ -506,7 +512,7 @@ assays(temp) <- c(assays(temp),assays(nuc0h80))
 
 exptData(temp)[[1]] <- c("/Users/tcarroll/Downloads//Sample_R2-6hDupMarked.bam","nuc")
 
-plotRegion(temp,gst)+aes(colour=Sample,linetype=Group
+plotRegion(test)+aes(colour=Sample,linetype=Sample
                          )+facet_wrap(~Sample,scales="free_y")+xlim(0,3000)
 
 bamFiles <- list("/Users/tcarroll/Downloads/CTCFCyclingTHDupMarked.bam","/Users/tcarroll/Downloads/DP_CTCFDupMarked.bam")

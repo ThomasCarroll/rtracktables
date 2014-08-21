@@ -22,30 +22,29 @@ setClass("ChIPprofile",contains = "SummarizedExperiment",
 #' @param x A ChIPprofile object 
 #' @param y A ChIPprofile object
 mergeChIPprofiles <- function(x,y){
-  t1 <- rowData(x)
-  filtDupt1 <- as.numeric(names(table(as.matrix(findOverlaps(t1,t1,type="equal"))[,2])[
-    table(as.matrix(findOverlaps(t1,t1,type="equal"))[,2]) >1]))
+  #t1 <- rowData(x)
+  selfOverlapst1 <- table(as.matrix(findOverlaps(x,x,type="equal"))[,2])
+  filtDupt1 <- as.numeric(names(selfOverlapst1[
+    selfOverlapst1 >1]))
   if(length(filtDupt1)){
-    t1assays <- lapply(assays(x),function(x)x[-filtDupt1,])
-    t1 <- t1[-filtDupt1,]
+    t1 <- x[-filtDupt1,]
   }else{
-    t1assays <- assays(x)
+    t1 <- x
   }
-  t2 <- rowData(y)
-  filtDupt2 <- as.numeric(names(table(as.matrix(findOverlaps(t2,t2,type="equal"))[,2])[
-    table(as.matrix(findOverlaps(t2,t2,type="equal"))[,2]) >1]))
+  selfOverlapst2 <- table(as.matrix(findOverlaps(y,y,type="equal"))[,2])
+  filtDupt2 <- as.numeric(names(selfOverlapst2[
+    selfOverlapst2 >1]))
   if(length(filtDupt2)){
-    t2assays <- lapply(assays(y),function(x)x[-filtDupt2,])
-    t2 <- t2[-filtDupt2,]
+    t2 <- y[-filtDupt2,]
   }else{
-    t1assays <- assays(x)
+    t2 <- x
   }
   t3 <- t1[as.matrix(findOverlaps(t1,t2,type="equal"))[,2]]
   t4 <- t2[as.matrix(findOverlaps(t1,t2,type="equal"))[,1]]
-  
+  t1t2Laps <- findOverlaps(t1,t2,type="equal")
   bothMeta <- NULL
   if(!is.null(elementMetadata(t3)) & !is.null(elementMetadata(t4))){
-    tempId <- seq(1,length(findOverlaps(t1,t2,type="equal"))) 
+    tempId <- seq(1,length(t1t2Laps)) 
     t3Data <- cbind(tempId,as.data.frame(elementMetadata(t3)))
     t4Data <- as.data.frame(elementMetadata(t4))
     # Can fix this to always get some metadata if any grange does
@@ -53,11 +52,12 @@ mergeChIPprofiles <- function(x,y){
     bothMeta <- merge(t3Data,t4Data,by="tempId",all=T)    
   }
   elementMetadata(t3) <- bothMeta[,!colnames(bothMeta) %in% "tempId"]
-  filtIndexX <- as.matrix(findOverlaps(t1,t2,type="equal"))[,2]
-  filtIndexY <- as.matrix(findOverlaps(t1,t2,type="equal"))[,1]
-  filtAssayListX <- lapply(t1assays,function(x)x[filtIndexX,])
-  filtAssayListY <- lapply(t2assays,function(x)x[filtIndexY,])
-  profileSample <- SummarizedExperiment(c(filtAssayListX,filtAssayListY),rowData=t3)
+  filtIndexX <- as.matrix(t1t2Laps)[,2]
+  filtIndexY <- as.matrix(t1t2Laps)[,1]
+  t3 <- t3[filtIndexX,]
+  t4 <- t4[filtIndexY,]
+  
+  profileSample <- SummarizedExperiment(c(assays(t3),assays(t4)),rowData=rowData(t3))
   exptData(profileSample) <- list(names=c(exptData(x)$names,exptData(y)$names))
   paramList <- x@params
   return(new("ChIPprofile",profileSample,params=paramList))
