@@ -27,6 +27,7 @@ Imports:
     reshape2
 Collate:
     'allClasses.r'
+    'igvtrackhubs.r'
     'peakTransforms.r'
     'plots.R'
     'tracktables.R'
