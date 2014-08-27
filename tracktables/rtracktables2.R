@@ -500,7 +500,7 @@ nuc0h803 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange3.bam",mm
 test <- Reduce(function(x,y) mergeChIPprofiles(x,y),c(pol0h,pol6h,nuc0h80,nuc0h804))
 test <- mergeChIPprofiles(test,nuc0h803)
 
-pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig",distanceInRegionStart=200,distanceInRegionEnd=200)
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
 
 
 

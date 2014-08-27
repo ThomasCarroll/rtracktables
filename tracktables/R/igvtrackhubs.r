@@ -16,6 +16,7 @@ MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table("\n#Intervals",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
   write.table(IntervalMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
 }
+
 makeTrackHub <- function(QCobject,peaksDir,bigwigDir,IGVdirectory,genome){
   dir.create(IGVdirectory,showWarnings=F)  
   ss <- QCmetadata(QCobject)
