@@ -101,6 +101,18 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     allchrs <- names(lengths)
     message("..Done")
   }
+  if(format=="rlelist"){
+    message("Importing rlelist",appendLF = FALSE)
+    genomeCov <- bamFile
+    if(is.null(seqlengths)){
+      seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
+    }else{
+      seqlengths(genomeCov)[match(names(lengths),names(genomeCov))] <- lengths
+    }
+    lengths <- seqlengths(genomeCov)
+    allchrs <- names(lengths)
+    message("..Done")
+  }
   
   
   ## Filter testRanges to those contained within chromosomes.
@@ -244,7 +256,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     
     
     
-    if(length(testRangesNeg) > 0){
+    if(length(testRangesPos) > 0){
       grWidths <- width(testRangesPos)  
       windows <- floor(grWidths%/%nOfWindows)
       extraLastWindow <- grWidths%%nOfWindows
@@ -347,7 +359,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     )
     filteredRanges <- c(testRangesPos,testRangesNeg)
     profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
+    if(format!="rlelist"){
     exptData(profileSample) <- list(names=c(bamFile))
+    }else{
+      exptData(profileSample) <- list(names=c("sampleName"))  
+    }
     paramList <- list("nOfWindows"=nOfWindows,
                       "style"=style,
                       "distanceAround"=NA,                      
