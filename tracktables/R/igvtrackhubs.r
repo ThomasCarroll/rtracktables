@@ -76,3 +76,95 @@ MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusN
   
   return(Output)
 }
+
+maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
+  
+  basedirectory <- gsub("/$","",basedirectory)
+  MakeIGVSampleMetadata(SampleSheet,fileSheet,basedirectory)
+  
+  #genome <- "mm9"
+  xmlFiles <- unlist(lapply(seq(1,nrow(fileSheet)),function(x)
+    MakeIGVSessionXML(fileSheet[x,,drop=F],
+                      basedirectory,
+                      paste0(fileSheet[x,1],"igv"),
+                      genome,
+                      locusName="All")
+  ))
+  
+  dataTableJS <- readLines("/Users/tcarroll/Downloads/Another2/datatables.js")
+  jqueryJS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.min.js")
+  dataTableCSS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.datatables.css")
+  
+  library(RJSONIO)
+  files <- unlist(lapply(xmlFiles,function(x)relativePath(x,
+                                                          gsub("//","/",file.path(basedirectory,filename))
+  )))
+  t3mp <- "\"<a href=\\\"http://localhost:60151/load?file=\".concat(dir.concat(\"/"
+  t4mp <- "\\\"\".concat(\""
+  t5mp <- "</a>\")))"
+  jsMat <- cbind(
+    matrix(paste0("\"",as.vector(SampleSheet),"\""),ncol=ncol(SampleSheet),byrow=F),
+    paste0(t3mp,files,"&merge=true",t4mp,">",SampleSheet[,1],t5mp)
+  )
+  setigv <- paste0("var igvtable = [",paste0(
+    "[",apply(jsMat,1,function(x)paste0(
+      x,collapse=","))
+    ,"]\n",collapse=",")
+    ,"];",sep="")
+  
+  jspart1 <- paste0("var loc = window.location.pathname;\n",
+                    "var dir = loc.substring(0, loc.lastIndexOf('/'));\n",setigv,"\n")
+  jspart2 <- paste0(
+    "$(document).ready(function() {
+    $('#demo').html( '<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display\" id=\"example\"></table>' );
+    $('#example').dataTable( {
+    \"data\": igvtable,\ncolumns:",
+    paste0("[",paste0(
+      unlist(lapply(c(colnames(SampleSheet),"IGV"),function(x)paste0(
+        c("{\"title\"",paste0(
+          "\"",
+          x,"\"}")
+        ),collapse=":")
+      )),collapse=",\n")
+      ,"]")
+    ,"\n","} );\n","} );\n")
+  jspart1.2 <- paste0(jspart1,jspart2)
+  doc <- newXMLDoc(isHTML = T)
+  html <- newXMLNode("html",parent=doc)
+  head <- newXMLNode("head",parent = html)
+  title <- newXMLNode("title",
+                      "IGV tracktables table",
+                      parent=head)
+  css <- newXMLNode("style",
+                    attrs=c("style type"="text/css","class"="init"),
+                    paste0(dataTableCSS,collapse=""),
+                    parent=head)
+  jqueryjs <- newXMLNode("script",
+                         attrs=c(type="text/javascript",language="javascript"),
+                         paste0(jqueryJS,collapse=""),
+                         parent=head)
+  datatablejs <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            paste0(dataTableJS,collapse=""),
+                            parent=head)
+  jspart1.2js <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            jspart1.2,
+                            parent=head)
+  body <- newXMLNode("body",
+                     attrs=c(class="dt-example"),
+                     parent=html)
+  div <- newXMLNode("div",
+                    attrs=c(class="container"),
+                    parent=body)
+  section <- newXMLNode("section",
+                        parent=div)
+  h1 <- newXMLNode("h1","IGV tracktables Example",
+                   parent=section)
+  div2 <- newXMLNode("div",
+                     attrs=c(id="demo"),
+                     parent=section)
+  saveXML(doc,file=file.path(basedirectory,filename),doctype="html")
+  return(doc)
+}
+
