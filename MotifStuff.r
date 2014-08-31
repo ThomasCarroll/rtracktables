@@ -32,14 +32,14 @@ pwmHitAsCoverage <- function(pwm,genome,min,chrofinterest){
 motifCov <- function(genome,regions,pwm,chrOfInterest){
   regionViews <- Views(genome[[chrOfInterest]],ranges(regions[seqnames(regions) %in% chrOfInterest]))
   trial <- matchPWM(pwm,regionViews,min.score = 0,with.score = T)
-  theRanges <- resize(as(trial,"IRanges"),1,"center")
+  #theRanges <- resize(as(trial,"IRanges"),1,"center")
+  theRanges <- as(trial,"IRanges")
   if(length(theRanges) > 0){
     motifCov <- unlist(coverage(GRanges(chrOfInterest,theRanges,"*",elementMetadata(trial)$score),weight="elementMetadata.trial..score"))
   }else{
     motifCov <- unlist(RleList(rep(0,length(genome[[chrOfInterest]]))))
   }
   return(motifCov)
-  gc()
 }
 
 makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandScore="mean"){
@@ -74,7 +74,6 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   for(k in 1:length(allchrs)){
     message(allchrs[k])
     forMotif[[k]] <- unlist(motifCov(genome,regions,pwm,allchrs[k]))  
-    gc()
   }
   message("..done")
   
@@ -83,7 +82,6 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   for(k in 1:length(allchrs)){
     message(allchrs[k])    
     revMotif[[k]] <- unlist(motifCov(genome,regions,reverseComplement(pwm),allchrs[k]))    
-    gc()
   }
   message("..done")
   
@@ -204,3 +202,42 @@ load("/home//pgellert/MatthiasTrial/Motif85.RData")
 ctcfMotifMeanScoreBnary <- regionPlot(motif85,chr1Peaks,style="point",format="rlelist",FragmentLength=130)
 
 plot(c(seq(1,3001),3001+seq(1,10000,100),10301+seq(1,3001)),runmean(10^colMeans(assays(ctcfMotifScore)[[1]]),50),type="l")
+
+
+Top5000 <- dpctcfPeaks[order(as.numeric(as.vector(dpctcfPeaks$Score)),decreasing=T)][1:1000]
+rleMotif1 <- makeMotifScoreRle(mdb.ctcf[[1]],dpctcfPeaks,Mmusculus,2000,removeRand=TRUE,strandScore="mean")
+ctcfMotifMeanScore <- regionPlot(rleMotif1,dpctcfPeaks,style="point",format="rlelist",FragmentLength=130)
+exptData(ctcfMotifMeanScore) <- list(names=c("sampleName"))
+plotRegion(ctcfMotifMeanScore)
+
+rleMotif1 <- makeMotifScoreRle(mdb.ctcf[[1]],DP_thymocytes,Mmusculus,2000,removeRand=TRUE,strandScore="mean")
+ctcfMotifEnhMeanScore <- regionPlot(rleMotif1,DP_thymocytes,style="region",format="rlelist",FragmentLength=130)
+exptData(ctcfMotifEnhMeanScore) <- list(names=c("sampleName"))
+plotRegion(ctcfMotifEnhMeanScore)
+
+MoreSets <- c(ChIPQC:::GetGRanges(DP_thymocytes,simplify=T),ChIPQC:::GetGRanges(ESCs,simplify=T))
+
+rleMotif12 <- makeMotifScoreRle(mdb.ctcf[[1]],MoreSets,Mmusculus,2000,removeRand=TRUE,strandScore="mean")
+ctcfMotifEnhMeanScore2 <- regionPlot(rleMotif12,MoreSets,style="region",nOfWindows=1000,format="rlelist",FragmentLength=130)
+exptData(ctcfMotifEnhMeanScore2) <- list(names=c("sampleName"))
+plotRegion(ctcfMotifEnhMeanScore2)
+
+rleMotif14 <- makeMotifScoreRle(mdb.ctcf[[1]],DP_thymocytes,Mmusculus,6000,removeRand=TRUE,strandScore="mean")
+
+ctcfMotifEnhMeanScore4 <- regionPlot(rleMotif14,DP_thymocytes,style="region",format="rlelist",FragmentLength=130,
+                                    distanceInRegionStart = 5000,
+                                    distanceOutRegionStart = 5000, distanceInRegionEnd = 5000,
+                                    distanceOutRegionEnd = 5000, 
+                                    )
+exptData(ctcfMotifEnhMeanScore4) <- list(names=c("sampleName"))
+
+plot(caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),50),type="l")
+
+> mean(width(DP_thymocytes)/100)
+[1] 376.4326
+> median(width(DP_thymocytes)/100)
+[1] 309.19
+> plot(j$data$xIndex,caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),300),type="l")
+> plot(j$data$xIndex,caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),3),type="l")
+> 
+#plotRegion(ctcfMotifEnhMeanScore4)

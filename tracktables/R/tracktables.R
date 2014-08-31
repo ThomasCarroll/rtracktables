@@ -341,9 +341,9 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     AllRegionEnd <- rbind(posRegionEndMat,negRegionEndMat)
     meansMat <- matrix(meansList,ncol=nOfWindows,byrow=T)
     rownames(meansMat) <- matrix(names(meansList),ncol=nOfWindows,byrow=T)[,1]
-    start <- cbind(seq(1:length(colMeans(AllRegionStart))),colMeans(AllRegionStart))
-    mid <- cbind(max(start[,1])+seq(1:length(colMeans(meansMat)))*100,colMeans(meansMat))
-    end <- cbind(max(mid[,1])+seq(1:length(colMeans(AllRegionEnd))),colMeans(AllRegionEnd))
+    start <- cbind(seq(1,length(colMeans(AllRegionStart))),colMeans(AllRegionStart))
+    mid <- cbind(max(start[,1])+seq(1,length(colMeans(meansMat)))*nOfWindows,colMeans(meansMat))
+    end <- cbind(max(mid[,1])+seq(1,length(colMeans(AllRegionEnd))),colMeans(AllRegionEnd))
     #reportRanges <- testRanges[match(rownames(meansMat),testRanges$name)]
     #returmm9PC[match(mm9PC$name,rownames(temp))]n(list(meansMat,AllRegionStart,AllRegionEnd,rbind(start,mid,end)))
     #reportRanges <- testRanges[match(rownames(meansMat),testRanges$name)]
@@ -354,7 +354,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
                         meansMat[order(rownames(meansMat)),],
                         AllRegionEnd[order(rownames(AllRegionEnd)),])
     colnames(profileMat) <- c(paste0("Region_Start",seq(0-distanceOutRegionStart,-1)),"Region_Start",paste0("Region_Start",seq(1,distanceOutRegionStart)),
-    paste0(seq(1:100),"%_ofRegion"),
+    paste0(seq(1,nOfWindows),"%_ofRegion"),
     paste0("Region_End",seq(0-distanceOutRegionEnd,-1)),"Region_End",paste0("Region_End",seq(1,distanceOutRegionEnd))
     )
     filteredRanges <- c(testRangesPos,testRangesNeg)
