@@ -1,3 +1,21 @@
+#' Make sample metadata file for use with IGV.
+#'
+#' Creates sample metadata file for IGV from data.frames of user supplied metadata and 
+#' file locations
+#' 
+#'
+#'
+#' @docType methods
+#' @name MakeIGVSampleMetadata
+#' @rdname MakeIGVSampleMetadata
+#' 
+#' @author Thomas Carroll
+#'
+#' @param sampleMetadata A data.frame object with metadata information for samples.
+#'  First column must contain unique sample ids. 
+#' @param SampleSheet A data.frame of file locations. First column must contain the unique sample ids.
+#' @param Directory where igv xml files are located
+#' @export
 MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table("#sampleTable",file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,sep="\t")
   colnames(sampleMetadata)[1] <- "Linking_id"
@@ -17,6 +35,24 @@ MakeIGVSampleMetadata <- function(sampleMetadata,SampleSheet,igvdirectory){
   write.table(IntervalMappings,file.path(igvdirectory,"SampleMetadata.txt"),row.names=F,col.names=F,quote=F,append=T,sep="\t")
 }
 
+#' Make session xml.
+#'
+#' Creates session for IGV from ChIPQC object
+#' 
+#'
+#'
+#' @docType methods
+#' @name makeTrackHub
+#' @rdname makeTrackHub
+#' 
+#' @author Thomas Carroll
+#'
+#' @param QCobject A ChIPQC object 
+#' @param peaksDir Directory containing peaks
+#' @param bigwigDir Directory containing bigwigs
+#' @param IGVdirectory Directory to write IGV xml file
+#' @param genome genome for IGV
+#' @export
 makeTrackHub <- function(QCobject,peaksDir,bigwigDir,IGVdirectory,genome){
   dir.create(IGVdirectory,showWarnings=F)  
   ss <- QCmetadata(QCobject)
@@ -35,6 +71,25 @@ makeTrackHub <- function(QCobject,peaksDir,bigwigDir,IGVdirectory,genome){
   return(MakeIGVSessionXML(fileSheet,IGVdirectory,"IGVfull",genome,locusName="All"))
 }
 
+#' Make session xml per file
+#'
+#' Creates session for IGV per file
+#' 
+#'
+#'
+#' @docType methods
+#' @name MakeIGVSessionXML
+#' @rdname MakeIGVSessionXML
+#' 
+#' @author Thomas Carroll
+#'
+#' @param SampleSheet A samplesheet containing file locations 
+#' @param igvdirectory Directory for IGV
+#' @param XMLname Name for IGV session xml
+#' @param IGVdirectory Directory to write IGV xml file
+#' @param genomeName genome for IGV
+#' @param locusName locus to display in igv on loading
+#' @export
 MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusName="All"){
   i <- 1
   require(XML)
@@ -77,6 +132,25 @@ MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusN
   return(Output)
 }
 
+#' Make session xml per file
+#'
+#' Creates session for IGV per file
+#' 
+#'
+#'
+#' @docType methods
+#' @name MakeIGVSessionXML
+#' @rdname MakeIGVSessionXML
+#' 
+#' @author Thomas Carroll
+#'
+#' @param SampleSheet A samplesheet containing file locations 
+#' @param igvdirectory Directory for IGV
+#' @param XMLname Name for IGV session xml
+#' @param IGVdirectory Directory to write IGV xml file
+#' @param genomeName genome for IGV
+#' @param locusName locus to display in igv on loading
+#' @export
 maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   
   basedirectory <- gsub("/$","",basedirectory)
