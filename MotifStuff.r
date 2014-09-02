@@ -96,6 +96,9 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   if(strandScore=="mean"){  
     MotifScore <- (revMotif+forMotif)/2
   }
+  if(strandScore=="max"){  
+    MotifScore <- pmax(revMotif,forMotif)
+  }  
   names(MotifScore) <- allchrs
   return(MotifScore)
 }
@@ -109,8 +112,8 @@ library(seqLogo)
 #load("/home/pgellert/MatthiasTrial/superenhancers.RData")
 load("/Users/tcarroll/Downloads/superenhancers.RData")
 
-#dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
-dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
+#dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
 
 
 mdb.ctcf <- MotifDb [grep ('ctcf', values (MotifDb)$geneSymbol, ignore.case=TRUE)]
@@ -241,3 +244,127 @@ plot(caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),50),type="l
 > plot(j$data$xIndex,caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),3),type="l")
 > 
 #plotRegion(ctcfMotifEnhMeanScore4)
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(width(DP_thymocytes)+1000),end(DP_thymocytes)+(width(DP_thymocytes)+1000)),strand="+",elementMetadata(DP_thymocytes))
+  
+rleMotif14 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="mean")
+
+ctcfMotifEnhMeanScore4 <- regionPlot(rleMotif14,DP_thymocytes,style="region",format="rlelist",FragmentLength=130,distanceInRegionStart = 5000,
+                                     distanceOutRegionStart = 5000, distanceInRegionEnd = 5000,
+                                     distanceOutRegionEnd = 5000)
+
+exptData(ctcfMotifEnhMeanScore4) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore4)
+plot(plotRegionRes$data$xIndex,caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),2000),type="l")
+
+
+
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(width(DP_thymocytes)+1000),end(DP_thymocytes)+(width(DP_thymocytes)+1000)),strand="+",elementMetadata(DP_thymocytes))
+rleMotif14 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="mean")
+motifScores_DP_thy_Enh <-rleMotif14
+save(motifScores_DP_thy_Enh,file="/home//pgellert/MatthiasTrial/MotifScores.RData") 
+  
+ctcfMotifEnhMeanScore4 <- regionPlot(rleMotif14,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 2000,
+                                     distanceOutRegionStart = 5000, distanceInRegionEnd = 2000,
+                                     distanceOutRegionEnd = 5000)
+exptData(ctcfMotifEnhMeanScore4) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore4)
+
+plot(plotRegionRes$data$xIndex,caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]]),500),type="l")
+
+firstPart <- caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]])[1:7001],300)
+mid <- caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]])[7002:8001],50)
+SecondPart <- caTools:::runmean(colMeans(assays(ctcfMotifEnhMeanScore4)[[1]])[8002:15002],300)
+
+plot(plotRegionRes$data$xIndex,c(firstPart,mid,SecondPart),type="l",xaxt='n')
+axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scales$scales[[1]]$labels,las=2)
+
+
+
+
+###########
+
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
+rleMotif2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+motifScores_DP_thy_Enh_Max <-rleMotif2
+save(motifScores_DP_thy_Enh_Max,file="/home//pgellert/MatthiasTrial/MaxStrand_MotifScores.RData") 
+
+ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif2,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 2000,
+                                     distanceOutRegionStart = 10000, distanceInRegionEnd = 2000,
+                                     distanceOutRegionEnd = 10000)
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore42)
+plotRegionRes
+
+ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif2,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 5000,
+                                      distanceOutRegionStart = 10000, distanceInRegionEnd = 5000,
+                                      distanceOutRegionEnd = 10000)
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore42)
+plotRegionRes
+
+
+names(revMotif) <- allchrs
+names(forMotif) <- allchrs
+
+ctcfMotifEnhMeanScoreRev <- regionPlot(revMotif,DP_thymocytes,style="region",format="rlelist",nOfWindows=100,FragmentLength=130)
+
+ctcfMotifEnhMeanScoreFor <- regionPlot(forMotif,DP_thymocytes,style="region",format="rlelist",nOfWindows=100,FragmentLength=130)
+
+exptData(ctcfMotifEnhMeanScoreRev) <- list(names=c("sampleName"))
+exptData(ctcfMotifEnhMeanScoreFor) <- list(names=c("sampleName"))
+temp <- pmax(revMotif,forMotif)
+
+ctcfMotifEnhMeanScoreMax <- regionPlot(temp,DP_thymocytes,style="region",format="rlelist",nOfWindows=100,FragmentLength=130)
+exptData(ctcfMotifEnhMeanScoreMax) <- list(names=c("sampleName"))
+plotRegion(ctcfMotifEnhMeanScoreMax)
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
+rleMotif28 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+
+ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif28,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 5000,
+                                      distanceOutRegionStart = 10000, distanceInRegionEnd = 5000,
+                                      distanceOutRegionEnd = 10000)
+
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegion(ctcfMotifEnhMeanScore42)
+########
+
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
+rleMotif2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+motifScores_DP_thy_Enh_Max <-rleMotif2
+
+ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif2,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 2000,
+                                      distanceOutRegionStart = 10000, distanceInRegionEnd = 2000,
+                                      distanceOutRegionEnd = 10000)
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore42)
+plotRegionRes
+
+
+
+
+MoreSets <- c(ChIPQC:::GetGRanges(DP_thymocytes,simplify=T),ChIPQC:::GetGRanges(ESCs,simplify=T))
+MoreSets2 <-  GRanges(seqnames(MoreSets),IRanges(start(MoreSets)-(2*width(MoreSets)),end(MoreSets)+(2*width(MoreSets))),strand="+",elementMetadata(MoreSets))
+
+rleMotif2 <- makeMotifScoreRle(mdb.ctcf[[1]],MoreSets2,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+motifScores_DP_thy_Enh_Max <-rleMotif2
+
+ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif2,MoreSets,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 2000,
+                                      distanceOutRegionStart = 10000, distanceInRegionEnd = 2000,
+                                      distanceOutRegionEnd = 10000)
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore42)
+plotRegionRes
+
+plot(plotRegionRes$data$xIndex,apply(assays(ctcfMotifEnhMeanScore42)[[1]],2,function(x)mean(x,trim=0.2)),type="l",xaxt="n")
+axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scales$scales[[1]]$labels,las=2)
+
+plot(plotRegionRes$data$xIndex,apply(assays(ctcfMotifEnhMeanScore42)[[1]],2,function(x)median(x)),type="l",xaxt="n")
+axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scales$scales[[1]]$labels,las=2)
+
+plot(plotRegionRes$data$xIndex,caTools::runmean(apply(assays(ctcfMotifEnhMeanScore42)[[1]],2,function(x)median(x)),200),type="l",xaxt="n")
+axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scales$scales[[1]]$labels,las=2)

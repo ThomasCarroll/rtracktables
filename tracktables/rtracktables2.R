@@ -628,3 +628,17 @@ lines(colMeans(unlist(test2[[1]])),col="blue")
 lines(colMeans(unlist(test22[[1]])),col="blue",lty=2)
 lines(colMeans(unlist(testtt2[[1]])),col="darkgreen",lty=2)
 lines(colMeans(unlist(testtt1[[1]])),col="purple",lty=2)
+
+bamFile <- "/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw"
+mm9Genes <- read.delim("/Users/tcarroll/Downloads/mm9Genes_May2012.txt",sep="\t",h=T)
+
+mm9GeneRanges <- GRanges(seqnames=paste0("chr",mm9Genes[,3]),ranges=IRanges(start=mm9Genes[,1],end=mm9Genes[,2]),strand=mm9Genes[,4],name=mm9Genes[,5],biotype=mm9Genes[,6])
+JustChrOfInterest <- unique(as.vector(seqnames(mm9GeneRanges)))[grep("chr\\d.|chr\\d|chrX|chrY|chrM",unique(as.vector(seqnames(mm9GeneRanges))))]
+mm9PC <- mm9GeneRanges[mm9GeneRanges$biotype == "protein_coding"]
+mm9PC <- mm9PC[order(width(mm9PC),decreasing=T)]
+mm9PC <- mm9PC[match(unique(mm9PC$name),mm9PC$name)]
+mm9PC <- mm9PC[!mm9PC$name == ""]
+mm9PC <- mm9PC[seqnames(mm9PC) %in% JustChrOfInterest]
+mm9PC <- mm9PC[width(mm9PC) > 200]
+
+testRanges <- mm9PC

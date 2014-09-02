@@ -27,10 +27,10 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
       
       profileMatTemp <- melt(as.data.frame(do.call(cbind,profileTempList)))
       if(object@params$style=="region" & plotregion=="full"){
-        axisIndex=c(seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)),
-                    (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
-                    (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
-                      seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)))
+        axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
+                    (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
+                    (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
+                      seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
       }
       if(object@params$style=="point"){
         axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
@@ -47,10 +47,10 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
     profileFrame <- do.call(cbind,profileList)
     colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
     if(object@params$style=="region"){    
-      axisIndex=c(seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)),
-                  (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
-                  (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
-                    seq(1,(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)))
+      axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
+                  (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
+                  (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
+                    seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
     }
     if(object@params$style=="point"){
       axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
@@ -65,14 +65,23 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
   P <- ggplot(meltedProfileFrame,
               aes(x=xIndex,y=Score))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
   if(object@params$style=="region" & plotregion =="full"){
-    P <- P + scale_x_continuous(breaks=c(1,object@params$distanceInRegionStart+1,
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1),
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+25*100,
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+75*100,
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100),
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+object@params$distanceInRegionStart+1,
-                                       (object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+(object@params$distanceInRegionStart+object@params$distanceInRegionStart+1)),
-                              labels=c("Start-1500","Start","Start+1500","25%","75%","End-1500","End","End+1500"))+
+    P <- P + scale_x_continuous(breaks=c(1,object@params$distanceOutRegionStart+1,
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1),
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(25/100)*(object@params$nOfWindows*100),
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(75/100)*(object@params$nOfWindows*100),
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100),
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+object@params$distanceInRegionEnd+1,
+                                       (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)),
+                              labels=c(paste0("Start-",object@params$distanceOutRegionStart),
+                                       "Start",
+                                       paste0("Start+",object@params$distanceInRegionStart),
+                                       "25%",
+                                       "75%",
+                                       paste0("End-",object@params$distanceInRegionEnd),
+                                       "End",
+                                       paste0("End+",object@params$distanceOutRegionEnd)
+                                       )
+                                )+
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
   }
   if(object@params$style=="point"){
