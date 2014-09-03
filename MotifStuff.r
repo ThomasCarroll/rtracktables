@@ -368,3 +368,7 @@ axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scal
 
 plot(plotRegionRes$data$xIndex,caTools::runmean(apply(assays(ctcfMotifEnhMeanScore42)[[1]],2,function(x)median(x)),200),type="l",xaxt="n")
 axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scales$scales[[1]]$labels,las=2)
+
+
+
+motif80DPEnh <- regionPlot(motif80,DP_thymocytes,style="percentOfRegion",distanceAround=100,format="rlelist")

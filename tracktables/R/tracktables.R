@@ -81,6 +81,13 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     distanceDownEnd <- distanceAround    
   }
   
+  if(style == "percentOfRegion"){
+    maxDistance <- round((distanceAround/100)*width(testRanges))
+    RegionsMat <- NULL    
+    distanceUpStart <- NULL
+    distanceDownEnd <- NULL    
+  }
+  
   if(format == "bam"){
     ## Get all chromosomes in bamFile
     message("Reading Bam header information...",appendLF = FALSE)
@@ -114,18 +121,35 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     message("..Done")
   }
   
-  
-  ## Filter testRanges to those contained within chromosomes.
-  message("Filtering regions which extend outside of genome boundaries...",appendLF = FALSE)
-  testRangeNames <- unique(seqnames(testRanges))
-  temptestranges <- GRanges()
-  for(i in 1:length(testRangeNames)){
-    perchrRanges <- testRanges[seqnames(testRanges) %in% as.vector(testRangeNames[i])]
-    temptestranges <- c(temptestranges,perchrRanges[end(perchrRanges)+maxDistance < lengths[names(lengths) %in% testRangeNames[i]]
-                                                    & start(perchrRanges)-maxDistance > 0 ])
-    #print(i)
+  if(style != "percentOfRegion"){
+    ## Filter testRanges to those contained within chromosomes.
+    message("Filtering regions which extend outside of genome boundaries...",appendLF = FALSE)
+    testRangeNames <- unique(seqnames(testRanges))
+    temptestranges <- GRanges()
+    for(i in 1:length(testRangeNames)){
+      perchrRanges <- testRanges[seqnames(testRanges) %in% as.vector(testRangeNames[i])]
+      temptestranges <- c(temptestranges,perchrRanges[end(perchrRanges)+maxDistance < lengths[names(lengths) %in% testRangeNames[i]]
+                                                      & start(perchrRanges)-maxDistance > 0 ])
+      #print(i)
+    }
   }
-  
+  if(style == "percentOfRegion"){
+    message("Filtering regions which extend outside of genome boundaries...",appendLF = FALSE)
+    testRangeNames <- unique(seqnames(testRanges))
+    temptestranges <- GRanges()
+    for(i in 1:length(testRangeNames)){
+      perChrMaxDistance <- maxDistance[as.vector(seqnames(testRanges) %in% as.vector(testRangeNames[i]))]
+      perchrRanges <- testRanges[seqnames(testRanges) %in% as.vector(testRangeNames[i])]
+      temptestranges <- c(temptestranges,perchrRanges[end(perchrRanges)+perChrMaxDistance < lengths[names(lengths) %in% testRangeNames[i]]
+                                                      & start(perchrRanges)-perChrMaxDistance > 0 ])
+      #print(i)
+      perChrMaxDistance <- perChrMaxDistance[end(perchrRanges)+perChrMaxDistance < lengths[names(lengths) %in% testRangeNames[i]]
+                                             & start(perchrRanges)-perChrMaxDistance > 0 ]
+      distanceUpStart <- c(distanceUpStart,perChrMaxDistance)
+    }
+    distanceDownEnd <- distanceUpStart
+    
+  }  
   message("..Done")
   message("Filtered ",length(testRanges)-length(temptestranges)," of ",length(testRanges)," regions")
   testRanges <- temptestranges
@@ -134,6 +158,18 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   strand(testRanges[strand(testRanges) == "*"]) <- "+"
   testRangesPos <- testRanges[strand(testRanges) == "+"]
   testRangesNeg <- testRanges[strand(testRanges) == "-"]
+  message("..Done")
+  if(style=="percentOfRegion"){
+    distanceUpStartPos <- distanceUpStart[as.vector(strand(testRanges) == "+")] 
+    distanceDownEndPos <- distanceUpStartPos    
+    distanceUpStartNeg <- distanceUpStart[as.vector(strand(testRanges) == "-")]
+    distanceDownEndNeg <- distanceUpStartNeg
+  }else{
+    distanceUpStartPos <- distanceUpStart 
+    distanceDownEndPos <- distanceDownEnd    
+    distanceUpStartNeg <- distanceUpStart
+    distanceDownEndNeg <- distanceDownEnd    
+  }
   message("..Done")
   if(style=="region"){
     message("Filtering regions which are smaller than windows into region...",appendLF = FALSE)
@@ -149,8 +185,8 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   
   ## Extend regions and get positive versus negative reads.
   message("Extending regions..",appendLF=FALSE)    
-  exttestRanges <- c(GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceUpStart,end(testRangesPos)+distanceDownEnd)),
-                     GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)-distanceDownEnd,end(testRangesNeg)+distanceUpStart))
+  exttestRanges <- c(GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceUpStartPos,end(testRangesPos)+distanceDownEndPos)),
+                     GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)-distanceDownEndNeg,end(testRangesNeg)+distanceUpStartNeg))
   )
   message("...done")   
   
@@ -236,6 +272,106 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
                       "distanceOutRegionEnd"=NA)
     return(new("ChIPprofile",profileSample,params=paramList))
   }
+  if(style=="percentOfRegion"){
+    meansList <- vector("numeric")
+    grListWindowsPos <- GRanges()
+    grListWindowsNeg <- GRanges()
+    #grListWindows <- list()
+    message("Making windows..",appendLF=FALSE)
+    if(length(testRangesPos) > 0){
+      grWidths <- width(testRangesPos)+distanceUpStartPos+distanceDownEndPos
+      allWindows <- nOfWindows*3
+      windows <- floor(grWidths%/%allWindows)
+      extraLastWindow <- grWidths%%allWindows
+      addToWindow <- 0
+      startPos <- start(testRangesPos)-((windows)*nOfWindows)-(windows/2)
+      
+      for(i in 1:allWindows){
+        addToWindow <- 0
+        if(i == 1){
+          addToWindow <- round(extraLastWindow/2) 
+        }
+        if(i == allWindows){
+          addToWindow <- round(extraLastWindow/2) 
+        }
+        
+        grListWindowsPos <- c(grListWindowsPos,GRanges(seqnames(testRangesPos),IRanges(      
+          (startPos)+(windows*(i-1)),
+          startPos+(windows*i)-1+addToWindow),giID=testRangesPos$giID))
+      }
+      grListWindowsPos <- grListWindowsPos[order(grListWindowsPos$giID)]
+      
+    }
+    if(length(testRangesNeg) > 0){
+      grWidths <- width(testRangesNeg)
+      windows <- floor(grWidths%/%nOfWindows)
+      extraLastWindow <- grWidths%%nOfWindows
+      addToWindow <- 0
+      grWidths <- width(testRangesNeg)+distanceUpStartNeg+distanceDownEndNeg
+      allWindows <- nOfWindows*3
+      windows <- floor(grWidths%/%allWindows)
+      extraLastWindow <- grWidths%%allWindows
+      addToWindow <- 0
+      endPos <- end(testRangesNeg)+(windows*nOfWindows)+round(windows/2)
+      
+      for(i in 1:allWindows){
+        addToFirstWindow <- 0
+        addToLastWindow <- 0
+        if(i == 1){
+          addToWindow <- round(extraLastWindow/2) 
+        }
+        if(i == nOfWindows){
+          addToWindow <- round(extraLastWindow/2) 
+        }
+        
+        grListWindowsNeg <- c(grListWindowsNeg,GRanges(seqnames(testRangesNeg),IRanges(     
+          endPos-(windows*i)+1-addToWindow,
+          endPos-(windows*(i-1))),giID=testRangesNeg$giID))
+      }
+      grListWindowsNeg <- grListWindowsNeg[order(grListWindowsNeg$giID)]
+    }
+    grListWindows <- c(grListWindowsPos,grListWindowsNeg)
+    message("..done\n")
+    for(c in 1:length(chromosomes)){
+      
+      message("Processing inner region windows in ",chromosomes[c])
+      covPerPeak <- Views(genomeCov[[which(names(genomeCov) %in% chromosomes[c])]],ranges(grListWindows[seqnames(grListWindows) == chromosomes[c]]))
+      doubleTemp <- viewMeans(covPerPeak)
+      names(doubleTemp) <- as.vector(grListWindows[seqnames(grListWindows) == chromosomes[c]]$giID)
+      meansList <- c(meansList,doubleTemp)
+      message("..done")
+      message("Processing flanking windows in ",chromosomes[c])      
+      
+      tempstartRegionRangesPosMat <- NULL
+      tempendRegionRangesPosMat <- NULL  
+      tempstartRegionRangesNegMat <- NULL
+      tempendRegionRangesNegMat <- NULL    
+    }
+    meansMat <- matrix(meansList,ncol=allWindows,byrow=T)
+    rownames(meansMat) <- matrix(names(meansList),ncol=allWindows,byrow=T)[,1]
+    
+    profileMat <- meansMat[order(rownames(meansMat)),]
+    colnames(profileMat) <- c(paste0("Start-",seq(1,nOfWindows)),
+                              paste0("Start+",seq(1,nOfWindows)),
+                              paste0("End+",seq(1,nOfWindows)))
+    filteredRanges <- c(testRangesPos,testRangesNeg)
+    profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
+    if(format!="rlelist"){
+      exptData(profileSample) <- list(names=c(bamFile))
+    }else{
+      exptData(profileSample) <- list(names=c("sampleName"))  
+    }
+    paramList <- list("nOfWindows"=nOfWindows,
+                      "style"=style,
+                      "distanceAround"=NA,                      
+                      "distanceInRegionStart"=NA,
+                      "distanceInRegionEnd"=NA,
+                      "distanceOutRegionStart"=NA,
+                      "distanceOutRegionEnd"=NA)
+    return(new("ChIPprofile",profileSample,params=paramList))
+  } 
+
+  
   if(style=="region"){
     
     message("Defining flanks of regions..",appendLF=FALSE)
