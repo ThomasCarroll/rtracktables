@@ -453,3 +453,10 @@ nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9
 nuc6h80 <- regionPlot("/Users/tcarroll//Downloads//mergedOHT.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
 
 
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",format="bigwig")
+
+pol6h20 <- regionPlot("/Users/tcarroll/Downloads//Sample_R1-0hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",format="bigwig",distanceAround = 20)
+
+nuc0h80 <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="region",paired=T,format="bam",forceFragment=80)
+nuc0h8020per <- regionPlot("/Users/tcarroll//Downloads//mergedETOH.bamRange5.bam",mm9PC,style="percentOfRegion",paired=T,format="bam",forceFragment=80,distanceAround = 20)
+

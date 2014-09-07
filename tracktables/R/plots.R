@@ -35,7 +35,9 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
       if(object@params$style=="point"){
         axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
       }
-      
+      if(object@params$style=="percentOfRegion"){
+        axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
+      }      
       profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(exptData(object)["names"]))[p],Score=profileMatTemp[,2])
       
       profileList[[p]] <- profileFrame
@@ -54,7 +56,10 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
     }
     if(object@params$style=="point"){
       axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
-    }    
+    }
+    if(object@params$style=="percentOfRegion"){
+      axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
+    }     
     rownames(profileFrame) <- axisIndex
     meltedProfileFrame <- melt(profileFrame)
     colnames(meltedProfileFrame) <- c("xIndex","Sample","Score")
@@ -89,6 +94,17 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
                               labels=c("Centre-1500","Centre","Centre+1500"))+
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
   }
+  if(object@params$style=="percentOfRegion"){
+    P <- P + scale_x_continuous(breaks=c(1,(nOfWindows*((object@params$distanceAround)/100)),
+                                            (nOfWindows*((object@params$distanceAround)/100))+nOfWindows,
+                                             2*(nOfWindows*((object@params$distanceAround)/100))+nOfWindows),
+                                labels=c(paste0("Start-",(nOfWindows*((object@params$distanceAround)/100)),"%"),
+                                                "Start",
+                                                "End",
+                                                paste0("End+",(nOfWindows*((object@params$distanceAround)/100)),"%")
+                                                ))+
+      theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
+  }  
   if(object@params$style=="region" & plotregion =="start"){
     P <- P + scale_x_continuous(breaks=c(1,object@params$distanceOutRegionStart+1,object@params$distanceInRegionStart+1+object@params$distanceOutRegionStart),
                               labels=c("Start-1500","Centre","Start+1500"),

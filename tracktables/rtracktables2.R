@@ -642,3 +642,7 @@ mm9PC <- mm9PC[seqnames(mm9PC) %in% JustChrOfInterest]
 mm9PC <- mm9PC[width(mm9PC) > 200]
 
 testRanges <- mm9PC
+
+pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
+pol6hper <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",distanceAround=40,format="bigwig")
+pol6hperSpline <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",distanceAround=40,format="bigwig",method="spline")

@@ -290,6 +290,7 @@ extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*w
 rleMotif2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
 motifScores_DP_thy_Enh_Max <-rleMotif2
 save(motifScores_DP_thy_Enh_Max,file="/home//pgellert/MatthiasTrial/MaxStrand_MotifScores.RData") 
+save(motifScores_DP_thy_Enh_Max,file="/Users/tcarroll/Downloads//MaxStrand_MotifScoresNew.RData") 
 
 ctcfMotifEnhMeanScore42 <- regionPlot(rleMotif2,DP_thymocytes,style="region",format="rlelist",nOfWindows=1000,FragmentLength=130,distanceInRegionStart = 2000,
                                      distanceOutRegionStart = 10000, distanceInRegionEnd = 2000,
@@ -372,3 +373,8 @@ axis(side=1,at=plotRegionRes$scales$scales[[1]]$breaks,labels=plotRegionRes$scal
 
 
 motif80DPEnh <- regionPlot(motif80,DP_thymocytes,style="percentOfRegion",distanceAround=100,format="rlelist")
+
+ctcfMotifEnhMeanScore42 <- regionPlot(motifScores_DP_thy_Enh_Max,DP_thymocytes,style="percentOfRegion",format="rlelist",nOfWindows=100,FragmentLength=130,distanceAround = 100)
+exptData(ctcfMotifEnhMeanScore42) <- list(names=c("sampleName"))
+plotRegionRes <- plotRegion(ctcfMotifEnhMeanScore42)
+plotRegionRes
