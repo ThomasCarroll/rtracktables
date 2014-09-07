@@ -30,7 +30,8 @@ pwmHitAsCoverage <- function(pwm,genome,min,chrofinterest){
 
 
 motifCov <- function(genome,regions,pwm,chrOfInterest){
-  regionViews <- Views(genome[[chrOfInterest]],ranges(regions[seqnames(regions) %in% chrOfInterest]))
+  reducedregions <- reduce(regions[seqnames(regions) %in% chrOfInterest])
+  regionViews <- Views(genome[[chrOfInterest]],ranges(reducedregions))
   trial <- matchPWM(pwm,regionViews,min.score = 0,with.score = T)
   #theRanges <- resize(as(trial,"IRanges"),1,"center")
   theRanges <- as(trial,"IRanges")
@@ -119,8 +120,8 @@ library(seqLogo)
 #load("/home/pgellert/MatthiasTrial/superenhancers.RData")
 load("/Users/tcarroll/Downloads/superenhancers.RData")
 
-dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
-#dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+#dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
+dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
 
 
 mdb.ctcf <- MotifDb [grep ('ctcf', values (MotifDb)$geneSymbol, ignore.case=TRUE)]
@@ -148,10 +149,10 @@ motif90 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="90%",removeRand=T)
 extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
 motifScores_DP_thy_Enh_Max2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
 ctcfDP <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
-ctcfDP <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100,method="spline")
+ctcfDPsp <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100,method="spline")
 
 extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
-motifScores_DP_thy_Enh_split <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="bothstrands")
+motifScores_DP_thy_Enh_split <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
 
 ctcfDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_CTCF_Shih_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)
 cohesinDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_Rad21_all_m1_v2_Vlad_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)
