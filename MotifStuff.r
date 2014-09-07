@@ -92,14 +92,21 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   forMotif <- RleList(forMotif,compress=F)
   if(strandScore=="sum"){
     MotifScore <- revMotif+forMotif
+    names(MotifScore) <- allchrs    
   }
   if(strandScore=="mean"){  
     MotifScore <- (revMotif+forMotif)/2
+    names(MotifScore) <- allchrs    
   }
   if(strandScore=="max"){  
     MotifScore <- pmax(revMotif,forMotif)
+    names(MotifScore) <- allchrs
   }  
-  names(MotifScore) <- allchrs
+  if(strandScore=="bothstrands"){  
+    MotifScore <- list(revMotif,forMotif)
+    names(MotifScore[[1]]) <- allchrs
+    names(MotifScore[[2]]) <- allchrs    
+  }  
   return(MotifScore)
 }
 
@@ -134,6 +141,17 @@ motif80 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="80%",removeRand=T)
 motif85 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="85%",removeRand=T)
 motif90 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="90%",removeRand=T)
 
+motif80 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="80%",removeRand=T)
+motif85 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="85%",removeRand=T)
+motif90 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="90%",removeRand=T)
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
+motifScores_DP_thy_Enh_Max2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+ctcfDP <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
+ctcfDP <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100,method="spline")
+
+extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
+motifScores_DP_thy_Enh_split <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="bothstrands")
 
 ctcfDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_CTCF_Shih_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)
 cohesinDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_Rad21_all_m1_v2_Vlad_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)

@@ -290,19 +290,20 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       testRangesNegNew <- GRanges()
       for(c in 1:length(chromosomes)){
         message(i)
-        testRangesPosNew <- c(testRangesPosNew,RangesPos[seqnames(RangesPos)==chromosomes[c]
-                                       ])
+
         if(any(seqnames(RangesPos)==chromosomes[c])){
+          testRangesPosNew <- c(testRangesPosNew,RangesPos[seqnames(RangesPos)==chromosomes[c]
+                                                           ])          
         matPos = c(matPos,list(t(viewApply(
                                         Views(genomeCov[names(genomeCov)==chromosomes[c]][[1]],
                                               ranges(RangesPos[seqnames(RangesPos)==chromosomes[c]])
                                         ),
                                           function(x)spline(x,n=(2*(nOfWindows*((distanceAround)/100)))+nOfWindows)$y))))
         }
-        testRangesNegNew <- c(testRangesNegNew,RangesNeg[seqnames(RangesNeg)==chromosomes[c]
-                                                         ])
         
         if(any(seqnames(RangesNeg)==chromosomes[c])){
+          testRangesNegNew <- c(testRangesNegNew,RangesNeg[seqnames(RangesNeg)==chromosomes[c]
+                                                           ])          
           matNeg = c(matNeg,list(t(viewApply(
             Views(genomeCov[names(genomeCov)==chromosomes[c]][[1]],
                   ranges(RangesNeg[seqnames(RangesNeg)==chromosomes[c]])
@@ -311,7 +312,13 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         }
 
     }
-    meansMat <- rbind(do.call(rbind,matPos),do.call(rbind,matNeg))
+    if(!is.null(matPos)){
+      matPos <- do.call(rbind,matPos)
+    }
+    if(!is.null(matNeg)){
+      matNeg <- do.call(rbind,matNeg)
+    }    
+    meansMat <- rbind(matPos,matNeg)
     allRanges <- c(testRangesPosNew,testRangesNegNew)
     rownames(meansMat) <- allRanges$giID
     profileMat <- meansMat[order(rownames(meansMat)),]
