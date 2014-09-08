@@ -646,3 +646,90 @@ testRanges <- mm9PC
 pol6h <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="region",format="bigwig")
 pol6hper <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",distanceAround=40,format="bigwig")
 pol6hperSpline <- regionPlot("/Users/tcarroll/Downloads//Sample_R2-6hDupMarkedNormalised.bw",mm9PC,style="percentOfRegion",distanceAround=40,format="bigwig",method="spline")
+
+
+CTCF motif analysis
+========================================================
+  
+  Some notes on profiles of CTCF signal, peaks and motifs over stretch enhancers.
+
+This makes use of rtracktables library..
+
+https://github.com/ThomasCarroll/rtracktables
+
+```{r}
+
+install_github("ThomasCarroll/rtracktables",subdir="tracktables")
+library(Biostrings)
+library(BSgenome.Mmusculus.UCSC.mm9)
+library(MotifDb)
+library(Biostrings)
+library(seqLogo)
+load("/home/pgellert/MatthiasTrial/superenhancers.RData")
+load("/Users/tcarroll/Downloads/superenhancers.RData")
+
+dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
+#dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+
+
+mdb.ctcf <- MotifDb [grep ('ctcf', values (MotifDb)$geneSymbol, ignore.case=TRUE)]
+
+```
+
+First lets make scores track for DP/ESC from Liz Ing-simmons and other SEs from Whyte paper supplementary file 1.
+
+Read in data from SE paper and add SP/ESC to this
+
+```{r fig.width=7, fig.height=6}
+
+#files <- dir("/home/pgellert/MatthiasTrial/",pattern="*.bed",full.names=T)
+files <- dir("/Users/tcarroll/Downloads/VladSeitan/",pattern="*.bed",full.names=T)
+SElist <- lapply(files,function(x)ChIPQC:::GetGRanges(x,simplify=T))
+SElist <- c(list(DP_thymocytes),list(ESCs),SElist)
+names(SElist) <- c("Ing_DP","Ing_ESC",gsub("\\.bed\\.csv","",basename(files)))
+
+SElist2 <- lapply(SElist,function(x)GRanges(seqnames(x),IRanges(start(x)-(width(x)*2),end(x)+(width(x)*2)),strand="+"))
+
+extendAllSE <- reduce(unlist(GRangesList(SElist2)))
+motifScores_DP_thy_Enh_Max3 <- makeMotifScoreRle(mdb.ctcf[[1]],extendAllSE,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+
+
+SElist[[1]] <- ChIPQC:::GetGRanges(SElist[[1]],simplify=T)
+SElist[[2]] <- ChIPQC:::GetGRanges(SElist[[2]],simplify=T)
+allSE <- unlist(GRangesList(SElist))
+elementMetadata(allSE) <- data.frame(name=names(allSE))
+
+ctcf_all_motifNew <- regionPlot(motifScores_DP_thy_Enh_Max3,allSE,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
+
+
+gts <- c(as.list(unique(names(allSE))),list(unique(names(allSE))[-c(1,2)]))
+
+names(gts) <- c(unique(names(allSE)),"All_SE")
+
+p <- plotRegion(ctcf_all_motifNew,gts=gts)
+p <- p+facet_wrap(~Group)+aes(colour=Group)
+
+ggsave(p,file="/Users/tcarroll/Downloads/MaxStrand_AllEnh_Means_100WindowsUpdated.png",width=15,height=15)
+
+ctcf_all_motifNewSpline <- regionPlot(motifScores_DP_thy_Enh_Max3,allSE,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100,method="spline")
+p <- plotRegion(ctcf_all_motifNewSpline,gts=gts)
+p <- p+facet_wrap(~Group)+aes(colour=Group)
+ggsave(p,file="/Users/tcarroll/Downloads/MaxStrand_AllEnh_Spline_100WindowsUpdated.png",width=15,height=15)
+
+
+ctcf_all_DPPeaks <- regionPlot(coverage(ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")),allSE,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
+p2 <- plotRegion(ctcf_all_DPPeaks,gts=gts)
+p2 <- p2+facet_wrap(~Group)+aes(colour=Group)
+
+nonRedundantAllSE <- allSE[!names(allSE) == "Ing_ESC"]
+ctcf_all_motifNew2 <- regionPlot(motifScores_DP_thy_Enh_Max3,nonRedundantAllSE,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
+ctcf_all_DPPeaks2 <- regionPlot(coverage(ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")),nonRedundantAllSE,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100)
+exptData(ctcf_all_DPPeaks2)[[1]] <- "DP_CTCF_Peaks" 
+exptData(ctcf_all_motifNew2)[[1]] <- "DP_CTCF_Motif" 
+
+motifsAndPeaks <- mergeChIPprofiles(ctcf_all_motifNew2,ctcf_all_DPPeaks2)
+gts2 <- c(as.list(unique(names(nonRedundantAllSE))),list(unique(names(nonRedundantAllSE))[-c(1)]))
+
+names(gts2) <- c(unique(names(allSE))[-1],"All_SE")
+
+plotRegion(motifsAndPeaks,gts=gts2)+facet_grid(Sample~Group,scales="free_y")+aes(colour=Group)
