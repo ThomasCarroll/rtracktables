@@ -154,6 +154,11 @@ ctcfDPsp <- regionPlot(motifScores_DP_thy_Enh_Max2,DP_thymocytes,nOfWindows=100,
 extendedDP <-  GRanges(seqnames(DP_thymocytes),IRanges(start(DP_thymocytes)-(2*width(DP_thymocytes)),end(DP_thymocytes)+(2*width(DP_thymocytes))),strand="+",elementMetadata(DP_thymocytes))
 motifScores_DP_thy_Enh_split <- makeMotifScoreRle(mdb.ctcf[[1]],extendedDP,Mmusculus,1000,removeRand=TRUE,strandScore="max")
 
+extendedESC <-  GRanges(seqnames(ESCs),IRanges(start(ESCs)-(2*width(ESCs)),end(ESCs)+(2*width(ESCs))),strand="+",elementMetadata(ESCs))
+motifScores_DP_thy_Enh_MaxESC2 <- makeMotifScoreRle(mdb.ctcf[[1]],extendedESC,Mmusculus,1000,removeRand=TRUE,strandScore="max")
+ctcfESC <- regionPlot(motifScores_DP_thy_Enh_MaxESC2,ESCs,nOfWindows=100,style="percentOfRegion",format="rlelist",FragmentLength=130,distanceAround = 100,method="spline")
+
+
 ctcfDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_CTCF_Shih_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)
 cohesinDP <- regionPlot("/home/pgellert/MatthiasTrial/DP_thymocyte_Rad21_all_m1_v2_Vlad_sorted.bam",DP_thymocytes,nOfWindows=1000,style="region",format="bam",FragmentLength=130)
 
