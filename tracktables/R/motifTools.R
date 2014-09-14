@@ -45,12 +45,16 @@ pwmHitAsCoverage <- function(pwm,genome,min,chrofinterest){
 }
 
 
-motifCov <- function(genome,regions,pwm,chrOfInterest){
+motifCov <- function(genome,regions,pwm,chrOfInterest,atCentre=FALSE){
   reducedregions <- reduce(regions[seqnames(regions) %in% chrOfInterest])
   regionViews <- Views(genome[[chrOfInterest]],ranges(reducedregions))
   trial <- matchPWM(pwm,regionViews,min.score = 0,with.score = T)
-  #theRanges <- resize(as(trial,"IRanges"),1,"center")
-  theRanges <- as(trial,"IRanges")
+  if(atCentre==TRUE){
+    theRanges <- resize(as(trial,"IRanges"),1,"center")
+  }
+  if(atCentre==FALSE){
+    theRanges <- as(trial,"IRanges")
+  }
   if(length(theRanges) > 0){
     motifCov <- unlist(coverage(GRanges(chrOfInterest,theRanges,"*",elementMetadata(trial)$score),weight="elementMetadata.trial..score"))
   }else{
@@ -77,7 +81,7 @@ motifCov <- function(genome,regions,pwm,chrOfInterest){
 #' @param removeRand Remove contigs with rand string
 #' @param strandScore Method for averaging strand. Options are max, mean, sum, bothstrands
 #' @export
-makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandScore="mean"){
+makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandScore="mean",atCentre=FALSE){
   regions <- GRanges(seqnames(regions),IRanges(start(regions)-extend,end(regions)+extend),strand=strand(regions),elementMetadata(regions))
   lengths <- seqlengths(genome)
   ## Filter testRanges to those contained within chromosomes.
@@ -108,7 +112,7 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   #motifScoreRLE <- lapply(allchrs,function(x)motifCov(genome,regions,pwm,x))
   for(k in 1:length(allchrs)){
     message(allchrs[k])
-    forMotif[[k]] <- unlist(motifCov(genome,regions,pwm,allchrs[k]))  
+    forMotif[[k]] <- unlist(motifCov(genome,regions,pwm,allchrs[k],atCentre))  
   }
   message("..done")
   

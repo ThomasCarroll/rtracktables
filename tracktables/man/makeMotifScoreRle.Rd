@@ -5,7 +5,7 @@
 \title{Motif score as an RLElist}
 \usage{
 makeMotifScoreRle(pwm, regions, genome, extend, removeRand = FALSE,
-  strandScore = "mean")
+  strandScore = "mean", atCentre = FALSE)
 }
 \arguments{
 \item{pwm}{A pwn matrix object.}
