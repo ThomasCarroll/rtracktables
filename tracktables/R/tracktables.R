@@ -30,15 +30,15 @@
 #' @export
 #' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings
 #' @include allClasses.r plots.R peakTransforms.r
-regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin"){
+regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80){
   if(!verbose){
     suppressMessages(runRegionPlot())
   }
-  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method)
+  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method,genome,cutoff)
   return(result)  
 }
 
-runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin"){
+runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80){
 
   #bamFile <- "/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/RNAPII/Sample_R1-0hDupMarked.bam"
   #bamFile <-"Downloads//mergedETOH.bwRange5.bw"
@@ -108,6 +108,10 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
     message("..Done")
+  }
+  if(format=="PWM"){
+    bamFile <- pwmToCoverage(bamFile,genome,min=cutoff,removeRand=FALSE)
+    format <- "rlelist"   
   }
   if(format=="rlelist"){
     message("Importing rlelist",appendLF = FALSE)
@@ -263,7 +267,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     colnames(profileMat) <- c(paste0("Point_Centre",seq(0-distanceOutRegionStart,-1)),"Point_Centre",paste0("Point_Centre",seq(1,distanceOutRegionStart)))
     filteredRanges <- c(RangesPos,RangesNeg)
     profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
-    exptData(profileSample) <- list(names=c(bamFile))
+    if(format=="rlelist"){
+      exptData(profileSample)  <- list(names=c("Sample"))
+    }else{
+      exptData(profileSample)<- list(names=c(bamFile))  
+    }
     paramList <- list("nOfWindows"=nOfWindows,
                       "style"=style,
                       "distanceAround"=distanceAround,                      
@@ -327,10 +335,10 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
                               paste0("End+",seq(1,(nOfWindows*((distanceAround)/100)))))
 
     profileSample <- SummarizedExperiment(profileMat,rowData=allRanges[match(rownames(profileMat),allRanges$giID)])
-    if(format!="rlelist"){
-      exptData(profileSample) <- list(names=c(bamFile))
+    if(format=="rlelist"){
+        exptData(profileSample)  <- list(names=c("Sample"))
     }else{
-      exptData(profileSample) <- list(names=c("sampleName"))  
+        exptData(profileSample)<- list(names=c(bamFile))  
     }
     paramList <- list("nOfWindows"=nOfWindows,
                       "style"=style,
@@ -499,10 +507,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
                               paste0("End+",seq(1,(nOfWindows*((distanceAround)/100)))))
     filteredRanges <- c(testRangesPos,testRangesNeg)
     profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
-    if(format!="rlelist"){
-      exptData(profileSample) <- list(names=c(bamFile))
+    print(format)
+    if(format=="rlelist"){
+      exptData(profileSample)  <- list(names=c("Sample"))
     }else{
-      exptData(profileSample) <- list(names=c("sampleName"))  
+      exptData(profileSample)<- list(names=c(bamFile))  
     }
     paramList <- list("nOfWindows"=nOfWindows,
                       "style"=style,
@@ -638,10 +647,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     )
     filteredRanges <- c(testRangesPos,testRangesNeg)
     profileSample <- SummarizedExperiment(profileMat,rowData=filteredRanges[match(rownames(profileMat),filteredRanges$giID)])
-    if(format!="rlelist"){
-    exptData(profileSample) <- list(names=c(bamFile))
+    print(format)
+    if(format=="rlelist"){
+      exptData(profileSample)  <- list(names=c("Sample"))
     }else{
-      exptData(profileSample) <- list(names=c("sampleName"))  
+      exptData(profileSample)<- list(names=c(bamFile))  
     }
     paramList <- list("nOfWindows"=nOfWindows,
                       "style"=style,

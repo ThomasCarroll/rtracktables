@@ -8,7 +8,8 @@ regionPlot(bamFile, testRanges, nOfWindows = 100, FragmentLength = 150,
   distanceOutRegionStart = 1500, distanceInRegionEnd = 1500,
   distanceOutRegionEnd = 1500, paired = F, normalize = "RPM",
   plotBy = "coverage", removeDup = F, verbose = T, format = "bam",
-  seqlengths = NULL, forceFragment = NULL, method = "bin")
+  seqlengths = NULL, forceFragment = NULL, method = "bin",
+  genome = NULL, cutoff = 80)
 }
 \arguments{
 \item{bamFile}{Character vector for location of BAM file.}
