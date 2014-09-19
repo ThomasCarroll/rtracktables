@@ -165,9 +165,9 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
                       locusName="All")
   ))
   
-  dataTableJS <- readLines("/Users/tcarroll/Downloads/Another2/datatables.js")
-  jqueryJS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.min.js")
-  dataTableCSS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.datatables.css")
+  dataTableJS <- readLines(system.file(package="tracktables","js","datatables.js"))
+  jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
+  dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
   
   library(RJSONIO)
   files <- unlist(lapply(xmlFiles,function(x)relativePath(x,

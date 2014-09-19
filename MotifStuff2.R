@@ -121,7 +121,7 @@ library(seqLogo)
 load("/Users/tcarroll/Downloads/superenhancers.RData")
 
 dpctcfPeaks <- ChIPQC:::GetGRanges("/home//pgellert/Dropbox (Lymphocyte_Developme)/tracktables/DP_CTCF_WithInput_DP_Input_peaks.bed")
-#dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
+dpctcfPeaks <- ChIPQC:::GetGRanges("/Users/tcarroll/Downloads/DP_CTCF_WithInput_DP_Input_peaks.bed")
 
 
 mdb.ctcf <- MotifDb [grep ('ctcf', values (MotifDb)$geneSymbol, ignore.case=TRUE)]
@@ -134,6 +134,8 @@ dev.off()
 png("/home/pgellert/MatthiasTrial/seqLogoMotif2.png")
 seqLogo(mdb.ctcf[[2]])
 dev.off()
+mdb.ctcf <- MotifDb [grep ('Gata3', values (MotifDb)$geneSymbol, ignore.case=TRUE)]
+ctcfDP <- regionPlot(mdb.ctcf[[4]],dpctcfPeaks,nOfWindows=100,style="point",format="PWM",FragmentLength=130,distanceAround = 100,genome=Mmusculus,cutoff = 70)
 
 
 motif70 <- pwmToCoverage(mdb.ctcf[[1]],Mmusculus,min="70%",removeRand=T)

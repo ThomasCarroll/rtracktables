@@ -22,6 +22,79 @@ colnames(fileSheet) <- c("SampleName","bam","bigwig","interval")
 MakeIGVSampleMetadata(SampleSheet,fileSheet,"/Users/tcarroll/Documents")
 MakeIGVSessionXML(fileSheet,"/Users/tcarroll/Documents","WeiIGVNewtest","mm9",locusName="All")
 
+makebedtable <- function(grangesObject,name,basedirectory){
+
+  dataTableJS <- readLines(system.file(package="tracktables","js","datatables.js"))
+  jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
+  dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
+  dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
+  jsarray <- paste("[",paste0("[",apply(as.data.frame(grangesObject),1,function(x)paste0(shQuote(x),collapse=",")),"]",collapse=",\n"),"]")
+  jsArrayForIGV <- paste0("var igvtable =",jsarray,";\n")
+  jspart2 <- paste0(
+    "$(document).ready(function() {
+    $('#demo').html( '<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display\" id=\"example\"></table>' );
+    $('#example').dataTable( {
+        deferRender:    true,
+        dom:            \"frtiS\",
+        scrollY:        200,
+        scrollCollapse: true,
+
+    \"data\": igvtable,\ncolumns:",
+    paste0("[",paste0(
+      unlist(lapply(c(colnames(as.data.frame(grangesObject))),function(x)paste0(
+        c("{\"title\"",paste0(
+          "\"",
+          x,"\"}")
+        ),collapse=":")
+      )),collapse=",\n")
+      ,"]")
+    ,"\n","} );\n","} );\n")
+
+  jspart1.2 <- paste0(jsArrayForIGV,jspart2)
+  doc <- newXMLDoc(isHTML = T)
+  html <- newXMLNode("html",parent=doc)
+  head <- newXMLNode("head",parent = html)
+  title <- newXMLNode("title",
+                      "IGV tracktables table",
+                      parent=head)
+  css <- newXMLNode("style",
+                    attrs=c("style type"="text/css","class"="init"),
+                    paste0(dataTableCSS,collapse=""),
+                    parent=head)
+  jqueryjs <- newXMLNode("script",
+                         attrs=c(type="text/javascript",language="javascript"),
+                         paste0(jqueryJS,collapse=""),
+                         parent=head)
+  datatablejs <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            paste0(dataTableJS,collapse=""),
+                            parent=head)
+  datatableScroller <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            paste0(dataTableScroller,collapse=""),
+                            parent=head)  
+  jspart1.2js <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            jspart1.2,
+                            parent=head)
+  body <- newXMLNode("body",
+                     attrs=c(class="dt-example"),
+                     parent=html)
+  div <- newXMLNode("div",
+                    attrs=c(class="container"),
+                    parent=body)
+  section <- newXMLNode("section",
+                        parent=div)
+  h1 <- newXMLNode("h1","IGV tracktables Example",
+                   parent=section)
+  div2 <- newXMLNode("div",
+                     attrs=c(id="demo"),
+                     parent=section)
+  saveXML(doc,file=file.path(basedirectory,filename),doctype="html")
+  
+  
+}
+
 maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
 
   basedirectory <- gsub("/$","",basedirectory)
@@ -36,9 +109,10 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
                     locusName="All")
   ))
 
-  dataTableJS <- readLines("/Users/tcarroll/Downloads/Another2/datatables.js")
-  jqueryJS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.min.js")
-  dataTableCSS <- readLines("/Users/tcarroll/Downloads/Another2/jquery.datatables.css")
+  dataTableJS <- readLines(system.file(package="tracktables","js","datatables.js"))
+  jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
+  dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
+  dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
   
   library(RJSONIO)
   files <- unlist(lapply(xmlFiles,function(x)relativePath(x,
