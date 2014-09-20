@@ -2,27 +2,12 @@
 \docType{methods}
 \name{MakeIGVSessionXML}
 \alias{MakeIGVSessionXML}
-\alias{maketracktable}
 \title{Make session xml per file}
 \usage{
 MakeIGVSessionXML(SampleSheet, igvdirectory, XMLname, genomeName,
   locusName = "All")
-
-maketracktable(fileSheet, SampleSheet, filename, basedirectory, genome)
 }
 \arguments{
-\item{SampleSheet}{A samplesheet containing file locations}
-
-\item{igvdirectory}{Directory for IGV}
-
-\item{XMLname}{Name for IGV session xml}
-
-\item{IGVdirectory}{Directory to write IGV xml file}
-
-\item{genomeName}{genome for IGV}
-
-\item{locusName}{locus to display in igv on loading}
-
 \item{SampleSheet}{A samplesheet containing file locations}
 
 \item{igvdirectory}{Directory for IGV}
@@ -37,12 +22,8 @@ maketracktable(fileSheet, SampleSheet, filename, basedirectory, genome)
 }
 \description{
 Creates session for IGV per file
-
-Creates session for IGV per file
 }
 \author{
-Thomas Carroll
-
 Thomas Carroll
 }
 

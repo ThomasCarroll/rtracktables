@@ -25,7 +25,10 @@ Imports:
     XVector,
     Rsamtools,
     reshape2,
-    Biostrings
+    Biostrings,
+    XML,
+    tractor.base,
+    stringr
 Collate:
     'allClasses.r'
     'igvtrackhubs.r'

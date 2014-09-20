@@ -1,0 +1,168 @@
+%\VignetteIndexEntry{Visualising sequencing data using tracktables}
+%\VignettePackage{tracktables}
+%\VignetteEngine{knitr::knitr}
+
+% To compile this document
+% library('knitr'); rm(list=ls()); knit('tracktables.Rnw')
+
+\documentclass[12pt]{article}\usepackage[]{graphicx}\usepackage[usenames,dvipsnames]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+
+
+
+\RequirePackage{/Library/Frameworks/R.framework/Versions/3.1/Resources/library/BiocStyle/sty/Bioconductor}
+
+\AtBeginDocument{\bibliographystyle{/Library/Frameworks/R.framework/Versions/3.1/Resources/library/BiocStyle/sty/unsrturl}}
+
+
+
+
+
+\author{Thomas Carroll$^{1*}$\\[1em] \small{$^{1}$ Bioinformatics Facility, MRC Clincal Sciences Centre;} \\ \small{\texttt{$^*$thomas.carroll (at)imperial.ac.uk}}}
+
+\title{Visualising ChIP-seq data -- tracktables}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ 
+ tracktables provides a set of tools to organise visualise your ChIP-seq data.
+  \vspace{1em}
+  
+  \end{abstract}
+
+
+
+\newpage
+
+\tableofcontents
+
+\section{Standard workflow}
+
+\subsection{Quick start}
+
+Tracktables has two main sets of functions to assist in rapid visualisation of genomics data. 
+
+The first set of functions deal with creating IGV sessions XMLs, sample information files and HTML tables allowing for dynamic updating of IGV.
+
+In this quick start we will look at building a simple HTML page of a ChIP-seq IGV session.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(tracktables)}
+\hlstd{SampleSheet} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik_prePro"}\hlstd{,}\hlstr{"Ik_pro"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"ProB"}\hlstd{,}\hlstr{"ProB"}\hlstd{,}\hlstr{"PreProB"}\hlstd{,}\hlstr{"ProB"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik"}\hlstd{,}\hlstr{"Ik"}\hlstd{)}
+\hlstd{)}
+\hlkwd{colnames}\hlstd{(SampleSheet)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"SampleName"}\hlstd{,}\hlstr{'Tissue'}\hlstd{,}\hlstr{"Factor"}\hlstd{)}
+\hlstd{fileSheet} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik_prePro"}\hlstd{,}\hlstr{"Ik_pro"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/MycDupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"/Users/tcarroll/Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed"}\hlstd{)}
+\hlstd{)}
+\hlkwd{colnames}\hlstd{(fileSheet)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"SampleName"}\hlstd{,}\hlstr{"bam"}\hlstd{,}\hlstr{"bigwig"}\hlstd{,}\hlstr{"interval"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(tracktables)}
+\hlstd{SampleSheet} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik_prePro"}\hlstd{,}\hlstr{"Ik_pro"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"ProB"}\hlstd{,}\hlstr{"ProB"}\hlstd{,}\hlstr{"PreProB"}\hlstd{,}\hlstr{"ProB"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik"}\hlstd{,}\hlstr{"Ik"}\hlstd{)}
+\hlstd{)}
+\hlkwd{colnames}\hlstd{(SampleSheet)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"SampleName"}\hlstd{,}\hlstr{'Tissue'}\hlstd{,}\hlstr{"Factor"}\hlstd{)}
+\hlstd{fileSheet} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}
+  \hlkwd{c}\hlstd{(}\hlstr{"Pu1"}\hlstd{,}\hlstr{"Myc"}\hlstd{,}\hlstr{"Ik_prePro"}\hlstd{,}\hlstr{"Ik_pro"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{,}\hlnum{NA}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/MycDupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlstr{"/Users/tcarroll/Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed"}\hlstd{,}
+    \hlstr{"/Users/tcarroll/Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed"}\hlstd{)}
+\hlstd{)}
+\hlkwd{colnames}\hlstd{(fileSheet)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"SampleName"}\hlstd{,}\hlstr{"bam"}\hlstd{,}\hlstr{"bigwig"}\hlstd{,}\hlstr{"interval"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The first set of functions are for summarising and visualising coverage of genomic regions across samples and gene/genomic-interval sets.
+The regionPlot function calculates normalised coverage across or over user specified regions to produce \Rclass{ChIPprofile} object.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{print}\hlstd{(}\hlstr{"Coming Soon!"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\bibliography{library}
+
+\end{document}

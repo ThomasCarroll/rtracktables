@@ -132,24 +132,24 @@ MakeIGVSessionXML <- function(SampleSheet,igvdirectory,XMLname,genomeName,locusN
   return(Output)
 }
 
-#' Make session xml per file
+#' Make HTML page for IGV sessions
 #'
-#' Creates session for IGV per file
+#' Creates HTML page for IGV sessions
 #' 
 #'
 #'
 #' @docType methods
-#' @name MakeIGVSessionXML
-#' @rdname MakeIGVSessionXML
+#' @name maketracktable
+#' @rdname maketracktable
 #' 
 #' @author Thomas Carroll
 #'
-#' @param SampleSheet A samplesheet containing file locations 
+#' @param fileSheet A data frame, matrix or character containing sample information locations
+#' @param SampleSheet A data frame, matrix or character containing sample information locations 
 #' @param igvdirectory Directory for IGV
-#' @param XMLname Name for IGV session xml
-#' @param IGVdirectory Directory to write IGV xml file
-#' @param genomeName genome for IGV
-#' @param locusName locus to display in igv on loading
+#' @param filename Name for IGV session xml
+#' @param basedirectory Directory to write IGV xml file
+#' @param genome genome for IGV
 #' @export
 maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   
@@ -168,7 +168,12 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   dataTableJS <- readLines(system.file(package="tracktables","js","datatables.js"))
   jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
   dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
+  dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
   
+  giHTMLs <- vector("character",nrow(fileSheet))
+  for(l in 1:nrow(fileSheet)){
+    giHTMLs[l] <- makebedtable(ChIPQC:::GetGRanges(fileSheet[l,"interval"]),paste0(fileSheet[l,"SampleName"],"GI.html"),"/Users/tcarroll/Documents")  
+  }
   library(RJSONIO)
   files <- unlist(lapply(xmlFiles,function(x)relativePath(x,
                                                           gsub("//","/",file.path(basedirectory,filename))
@@ -178,7 +183,8 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   t5mp <- "</a>\")))"
   jsMat <- cbind(
     matrix(paste0("\"",as.vector(SampleSheet),"\""),ncol=ncol(SampleSheet),byrow=F),
-    paste0(t3mp,files,"&merge=true",t4mp,">",SampleSheet[,1],t5mp)
+    paste0(t3mp,files,"&merge=true",t4mp,">",SampleSheet[,1],t5mp),
+    paste0("\"<a href=\\\"",basename(giHTMLs),"\\\">Intervals</a>\"")
   )
   setigv <- paste0("var igvtable = [",paste0(
     "[",apply(jsMat,1,function(x)paste0(
@@ -194,7 +200,7 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
     $('#example').dataTable( {
     \"data\": igvtable,\ncolumns:",
     paste0("[",paste0(
-      unlist(lapply(c(colnames(SampleSheet),"IGV"),function(x)paste0(
+      unlist(lapply(c(colnames(SampleSheet),"IGV","Intervals"),function(x)paste0(
         c("{\"title\"",paste0(
           "\"",
           x,"\"}")
@@ -240,5 +246,96 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
                      parent=section)
   saveXML(doc,file=file.path(basedirectory,filename),doctype="html")
   return(doc)
+}
+
+#' Make HTML page for interval files or GRanges
+#'
+#' Creates HTML page for interval files or GRanges
+#' 
+#'
+#'
+#' @docType methods
+#' @name makebedtable
+#' @rdname makebedtable
+#' 
+#' @author Thomas Carroll
+#'
+#' @param grangesObject A GRanges or object which may be parsed by ChIPQC GetGRanges method.
+#' @param name Name for IGV session xml
+#' @param basedirectory Directory to write IGV xml file
+#' @export
+makebedtable <- function(grangesObject,name,basedirectory){
+  
+  dataTableJS <- readLines(system.file(package="tracktables","js","datatables.js"))
+  jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
+  dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
+  dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
+  grangesFrame <- as.matrix(as.data.frame(grangesObject))
+  grangesFrame <- str_trim(grangesFrame)
+  jsarray <- paste("[",paste0("[",apply(grangesFrame,1,function(x)paste0(c(shQuote(c(paste0("<a href=\"http://localhost:60151/goto?locus=",x[1],":",x[2],"-",x[3],"\">IGV</a>"))),shQuote(x)),collapse=",")),"]",collapse=",\n"),"]")
+  jsArrayForIGV <- paste0("var igvtable =",jsarray,";\n")
+  jspart2 <- paste0(
+    "$(document).ready(function() {
+    $('#demo').html( '<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display\" id=\"example\"></table>' );
+    $('#example').dataTable( {
+    deferRender:    true,
+    dom:            \"frtiS\",
+    scrollY:        200,
+    scrollCollapse: true,
+    
+    \"data\": igvtable,\ncolumns:",
+    paste0("[",paste0(
+      unlist(lapply(c("IGV_Link",colnames(as.data.frame(grangesObject))),function(x)paste0(
+        c("{\"title\"",paste0(
+          "\"",
+          x,"\"}")
+        ),collapse=":")
+      )),collapse=",\n")
+      ,"]")
+    ,"\n","} );\n","} );\n")
+  
+  jspart1.2 <- paste0(jsArrayForIGV,jspart2)
+  doc <- newXMLDoc(isHTML = T)
+  html <- newXMLNode("html",parent=doc)
+  head <- newXMLNode("head",parent = html)
+  title <- newXMLNode("title",
+                      "IGV tracktables table",
+                      parent=head)
+  css <- newXMLNode("style",
+                    attrs=c("style type"="text/css","class"="init"),
+                    paste0(dataTableCSS,collapse=""),
+                    parent=head)
+  jqueryjs <- newXMLNode("script",
+                         attrs=c(type="text/javascript",language="javascript"),
+                         paste0(jqueryJS,collapse=""),
+                         parent=head)
+  datatablejs <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            paste0(dataTableJS,collapse=""),
+                            parent=head)
+  datatableScroller <- newXMLNode("script",
+                                  attrs=c(type="text/javascript",language="javascript"),
+                                  paste0(dataTableScroller,collapse=""),
+                                  parent=head)  
+  jspart1.2js <- newXMLNode("script",
+                            attrs=c(type="text/javascript",language="javascript"),
+                            jspart1.2,
+                            parent=head)
+  body <- newXMLNode("body",
+                     attrs=c(class="dt-example"),
+                     parent=html)
+  div <- newXMLNode("div",
+                    attrs=c(class="container"),
+                    parent=body)
+  section <- newXMLNode("section",
+                        parent=div)
+  h1 <- newXMLNode("h1","IGV tracktables Example",
+                   parent=section)
+  div2 <- newXMLNode("div",
+                     attrs=c(id="demo"),
+                     parent=section)
+  saveXML(doc,file=file.path(basedirectory,name),doctype="html")
+  
+  
 }
 
