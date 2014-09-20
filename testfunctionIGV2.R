@@ -124,6 +124,10 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
   dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
   
+  giHTMLs <- vector("character",nrow(fileSheet))
+  for(l in 1:nrow(fileSheet)){
+     giHTMLs[l] <- makebedtable(ChIPQC:::GetGRanges(fileSheet[l,"interval"]),paste0(fileSheet[l,"SampleName"],"GI.html"),"/Users/tcarroll/Documents")  
+  }
   library(RJSONIO)
   files <- unlist(lapply(xmlFiles,function(x)relativePath(x,
                                                           gsub("//","/",file.path(basedirectory,filename))
@@ -133,7 +137,8 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   t5mp <- "</a>\")))"
   jsMat <- cbind(
     matrix(paste0("\"",as.vector(SampleSheet),"\""),ncol=ncol(SampleSheet),byrow=F),
-    paste0(t3mp,files,"&merge=true",t4mp,">",SampleSheet[,1],t5mp)
+    paste0(t3mp,files,"&merge=true",t4mp,">",SampleSheet[,1],t5mp),
+    paste0("\"<a href=\\\"",basename(giHTMLs),"\\\">Intervals</a>\"")
   )
   setigv <- paste0("var igvtable = [",paste0(
     "[",apply(jsMat,1,function(x)paste0(
@@ -149,7 +154,7 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
     $('#example').dataTable( {
     \"data\": igvtable,\ncolumns:",
     paste0("[",paste0(
-      unlist(lapply(c(colnames(SampleSheet),"IGV"),function(x)paste0(
+      unlist(lapply(c(colnames(SampleSheet),"IGV","Intervals"),function(x)paste0(
         c("{\"title\"",paste0(
           "\"",
           x,"\"}")
