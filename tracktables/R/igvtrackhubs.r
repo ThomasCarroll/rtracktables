@@ -169,6 +169,7 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
   dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
   dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
+  tracktablesCSS <- readLines(system.file(package="tracktables","js","tracktables.css"))
   
   giHTMLs <- vector("character",nrow(fileSheet))
   for(l in 1:nrow(fileSheet)){
@@ -212,13 +213,17 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
   doc <- newXMLDoc(isHTML = T)
   html <- newXMLNode("html",parent=doc)
   head <- newXMLNode("head",parent = html)
-  title <- newXMLNode("title",
-                      "IGV tracktables table",
+  title <- newXMLNode("h2",
+                      "Tracktables Report",
                       parent=head)
   css <- newXMLNode("style",
                     attrs=c("style type"="text/css","class"="init"),
                     paste0(dataTableCSS,collapse=""),
                     parent=head)
+  tracktablescss <- newXMLNode("style",
+                    attrs=c("style type"="text/css","class"="init"),
+                    paste0(tracktablesCSS,collapse=""),
+                    parent=head)  
   jqueryjs <- newXMLNode("script",
                          attrs=c(type="text/javascript",language="javascript"),
                          paste0(jqueryJS,collapse=""),
@@ -239,7 +244,23 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
                     parent=body)
   section <- newXMLNode("section",
                         parent=div)
-  h1 <- newXMLNode("h1","IGV tracktables Example",
+  h1 <- newXMLNode("h1","The Tracktables Sample Report",
+                   parent=section)
+  p1 <- newXMLNode("p","
+                   This report contains sample information and dynamic links to display and control Broad's Integrative Genome Browser (IGV). This report aims to speed up the organisation and visualisation of genomics data by allowing for the passing of metadata and sample information to IGV and the rapid selection of samples and points of interest using HTML tables.
+                   ",
+                   parent=section)
+  p2 <- newXMLNode("p","Getting started:",
+                   parent=section)
+  ul1 <- newXMLNode("ul","",
+                   parent=section)
+  li1 <- newXMLNode("li","To take advantage of the integration with IGV, IGV must be already running on your machine or can be launched now from this webstart.",
+                    parent=ul1)
+  li2 <- newXMLNode("li","To load coverage, BAM and/or interval files (bed, narrow peak format etc) simply click the respective sample link in the IGV column.",
+                    parent=ul1)
+  li3 <- newXMLNode("li","To open a new tracktable containing information on Sample interval files click the link in that sample's repsective Intervals column.",
+                    parent=ul1)
+  p3 <- newXMLNode("p","For further information on the use of tracktables, please see our Github page or Bioconductor site.",
                    parent=section)
   div2 <- newXMLNode("div",
                      attrs=c(id="demo"),
@@ -270,6 +291,8 @@ makebedtable <- function(grangesObject,name,basedirectory){
   jqueryJS <- readLines(system.file(package="tracktables","js","jquery.min.js"))
   dataTableCSS <- readLines(system.file(package="tracktables","js","jquery.datatables.css"))
   dataTableScroller <- readLines(system.file(package="tracktables","js","dataTables.scroller.min.js"))
+  tracktablesCSS <- readLines(system.file(package="tracktables","js","tracktables.css"))
+  
   grangesFrame <- as.matrix(as.data.frame(grangesObject))
   grangesFrame <- str_trim(grangesFrame)
   jsarray <- paste("[",paste0("[",apply(grangesFrame,1,function(x)paste0(c(shQuote(c(paste0("<a href=\"http://localhost:60151/goto?locus=",x[1],":",x[2],"-",x[3],"\">IGV</a>"))),shQuote(x)),collapse=",")),"]",collapse=",\n"),"]")
@@ -298,13 +321,17 @@ makebedtable <- function(grangesObject,name,basedirectory){
   doc <- newXMLDoc(isHTML = T)
   html <- newXMLNode("html",parent=doc)
   head <- newXMLNode("head",parent = html)
-  title <- newXMLNode("title",
-                      "IGV tracktables table",
+  title <- newXMLNode("h2",
+                      "Tracktables Report",
                       parent=head)
   css <- newXMLNode("style",
                     attrs=c("style type"="text/css","class"="init"),
                     paste0(dataTableCSS,collapse=""),
                     parent=head)
+  tracktablescss <- newXMLNode("style",
+                               attrs=c("style type"="text/css","class"="init"),
+                               paste0(tracktablesCSS,collapse=""),
+                               parent=head)  
   jqueryjs <- newXMLNode("script",
                          attrs=c(type="text/javascript",language="javascript"),
                          paste0(jqueryJS,collapse=""),
@@ -329,8 +356,22 @@ makebedtable <- function(grangesObject,name,basedirectory){
                     parent=body)
   section <- newXMLNode("section",
                         parent=div)
-  h1 <- newXMLNode("h1","IGV tracktables Example",
+  h1 <- newXMLNode("h1","The Tracktables Interval Report",
                    parent=section)
+  p1 <- newXMLNode("p","
+                   This report contains genomic interval coordinates,  metadata and dynamic links to control the region displayed within Broad's Integrative Genome Browser (IGV). This alows fort rapid visualisation and interrogation of points of interest within the Genome Browser using HTML tables.
+                   ",
+                   parent=section)
+  p2 <- newXMLNode("p","Getting started:",
+                   parent=section)
+  ul1 <- newXMLNode("ul","",
+                    parent=section)
+  li1 <- newXMLNode("li","To take advantage of the integration with IGV, IGV must be already running on your machine or can be launched now from this webstart.",
+                    parent=ul1)
+  li2 <- newXMLNode("li","To change IGV display to the region of interest, simply click the respective Interval link in the IGV column.",
+                    parent=ul1)
+  p3 <- newXMLNode("p","For further information on the use of tracktables, please see our Github page or Bioconductor site.",
+                   parent=section)  
   div2 <- newXMLNode("div",
                      attrs=c(id="demo"),
                      parent=section)
