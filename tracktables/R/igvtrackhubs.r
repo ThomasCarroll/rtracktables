@@ -265,8 +265,8 @@ maketracktable <- function(fileSheet,SampleSheet,filename,basedirectory,genome){
                    parent=divtttext)
   ul1 <- newXMLNode("ul","",
                    parent=divtttext)
-  li1 <- newXMLNode("li","To take advantage of the integration with IGV, IGV must be already running on your machine or can be launched now from this webstart.",
-                    parent=ul1)
+  li1 <- newXMLNode("li","To take advantage of the integration with IGV, <b>IGV must be already running </b>on your machine or can be launched now from this webstart.",
+                    parent=ul1,cdata=TRUE)
   li2 <- newXMLNode("li","To load coverage, BAM and/or interval files (bed, narrow peak format etc) simply click the respective sample link in the IGV column.",
                     parent=ul1)
   li3 <- newXMLNode("li","To open a new tracktable containing information on Sample interval files click the link in that sample's repsective Intervals column.",
