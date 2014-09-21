@@ -7,9 +7,16 @@ h2{
 	border-width: 5;
 	/*!background-color:rgb(208,201,194); !*/
 }
-div{
-	margin-left: 5%;
+#tttext{
+  margin-left: 5%;
 	margin-right: 5%;
+	/*!border-left: solid;
+	/*!border-left-color: rgb(33,103,126);
+	/*!background-color:rgb(208,201,194); !*/
+}
+#demo{
+	margin-left: 10%;
+	margin-right: 10%;
 	/*!border-left: solid;
 	/*!border-left-color: rgb(33,103,126);
 	/*!background-color:rgb(208,201,194); !*/
