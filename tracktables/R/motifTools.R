@@ -44,6 +44,52 @@ pwmHitAsCoverage <- function(pwm,genome,min,chrofinterest){
   return(rleTotal[[1]])
 }
 
+pwmHitAsGRanges <- function(pwm,genome,min,chrofinterest){
+  posMotifs <- matchPWM(pwm,genome[[chrofinterest]],min.score=min,with.score=T)
+  negMotifs <- matchPWM(reverseComplement(pwm),genome[[chrofinterest]],min.score=min,with.score=T)
+  posMotifs <- GRanges(seqnames=rep(chrofinterest,length(posMotifs)),
+                       ranges=ranges(posMotifs),
+                       strand=rep("+",length(posMotifs))                      
+                       )
+  negMotifs <- GRanges(seqnames=rep(chrofinterest,length(negMotifs)),
+                       ranges=ranges(negMotifs),
+                       strand=rep("-",length(negMotifs))                      
+                        )
+  #strand(negMotifs) <- rep("-",length(negMotifs))
+  GRangesTotal <- c(posMotifs,negMotifs)
+  return(GRangesTotal)
+}
+
+pwmToGranges <- function(pwm,genome,min,chrs=NULL){
+  if(is.null(chrs)){
+    chrs <- seqnames(Mmusculus)
+  }
+  chrs <- unique(chrs)
+  Res <- lapply(chrs,function(x)pwmHitAsGRanges(pwm,genome,min,x))
+  pwmHitsAsGRanges <- unlist(GRangesList(unlist(Res)))
+}
+
+makeGRangesWithSummary <- function(GRangesSet,scoreBy){
+  temp <- viewSums(Views(scoreBy,
+                 ranges(GRangesSet)
+            )
+  )  
+  elementMetadata(GRangesSet) <- data.frame(score=temp)
+  return(GRangesSet)
+}
+  
+
+rleFromScoresInGRanges <- function(GRangesSet,scoreBy,chrs){
+  chrs <- chrs[chrs %in% names(scoreBy)]
+  chrs <- chrs[chrs %in% names(seqlengths(GRangesSet))]  
+  res <- lapply(chrs,function(x)
+                makeGRangesWithSummary(
+                  GRangesSet[
+                    seqnames(GRangesSet) %in% x,],
+                  scoreBy[[x]]        
+                  ))
+  return(unlist(GRangesList(unlist(res))))
+}
 
 motifCov <- function(genome,regions,pwm,chrOfInterest,atCentre=FALSE){
   reducedregions <- reduce(regions[seqnames(regions) %in% chrOfInterest])
