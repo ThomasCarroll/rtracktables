@@ -1,4 +1,4 @@
-Package: tracktables
+Package: sogi
 Type: Package
 Title: Build IGV tracks and HTML reports
 Version: 1.0.1
